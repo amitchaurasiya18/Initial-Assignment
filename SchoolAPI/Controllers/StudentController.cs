@@ -1,10 +1,11 @@
 ﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using SchoolAPI.DTO;
-using SchoolAPI.Models;
-using SchoolAPI.Services.Interfaces;
+using SchoolAPI.Business.Models;
+using SchoolAPI.Business.Services.Interfaces;
 using SchoolAPI.Validators;
-using System;
+using AutoMapper;
+using SchoolAPI.Business;
 
 namespace SchoolAPI.Controllers
 {
@@ -13,22 +14,25 @@ namespace SchoolAPI.Controllers
     public class StudentController : ControllerBase
     {
         private readonly IStudentService _studentService;
+        private readonly IMapper _mapper;
         private const int PAGE = 1;
         private const int PAGE_SIZE = 10;
         private const string SEARCH_TERM = "";
 
-        public StudentController(IStudentService studentService)
+        public StudentController(IStudentService studentService, IMapper mapper)
         {
             _studentService = studentService;
+            _mapper = mapper;
         }
 
         [HttpGet("get-all")]
-        public IActionResult GetAllStudents()
+        public async Task<IActionResult> GetAllStudents()
         {
             try
             {
-                var students = _studentService.GetAll();
-                return Ok(students);
+                var students = await _studentService.GetAll();
+                var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(students);
+                return Ok(studentDTOs);
             }
             catch (Exception ex)
             {
@@ -41,12 +45,13 @@ namespace SchoolAPI.Controllers
         {
             try
             {
-                var student = _studentService.GetById(id);
+                var student = await _studentService.GetById(id);
                 if (student == null)
                 {
                     return NotFound("Student not found");
                 }
-                return Ok(student);
+                var studentDTO = _mapper.Map<StudentGetDTO>(student);
+                return Ok(studentDTO);
             }
             catch (Exception ex)
             {
@@ -70,8 +75,15 @@ namespace SchoolAPI.Controllers
 
             try
             {
-                _studentService.Add(studentPostDTO);
-                return Ok(studentPostDTO);
+                var student = _mapper.Map<Student>(studentPostDTO);
+                student.CreatedAt = DateTime.Now;
+                student.UpdatedAt = DateTime.Now;
+                student.Age = await _studentService.CalculateAge(student.DateOfBirth);
+                student.isActive = true;
+
+                var addedStudent = await _studentService.Add(student);
+                var addedStudentDTO = _mapper.Map<StudentGetDTO>(addedStudent);
+                return Ok(addedStudentDTO);
             }
             catch (Exception ex)
             {
@@ -84,14 +96,23 @@ namespace SchoolAPI.Controllers
         {
             try
             {
-                var existingStudent = _studentService.GetById(id);
+                var existingStudent = await _studentService.GetById(id);
                 if (existingStudent == null)
                 {
                     return NotFound("Student not found");
                 }
 
-                await _studentService.Update(id, studentPostDTO);
-                return Ok(studentPostDTO);
+                existingStudent.FirstName = studentPostDTO.FirstName;
+                existingStudent.LastName = studentPostDTO.LastName;
+                existingStudent.Email = studentPostDTO.Email;
+                existingStudent.Phone = studentPostDTO.Phone;
+                existingStudent.DateOfBirth = studentPostDTO.DateOfBirth;
+                existingStudent.Age = await _studentService.CalculateAge(studentPostDTO.DateOfBirth);
+                existingStudent.UpdatedAt = DateTime.Now;
+
+                var updatedStudent = await _studentService.Update(id, existingStudent);
+                var updatedStudentDTO = _mapper.Map<StudentGetDTO>(updatedStudent);
+                return Ok(updatedStudentDTO);
             }
             catch (Exception ex)
             {
@@ -105,7 +126,7 @@ namespace SchoolAPI.Controllers
             try
             {
                 var result = await _studentService.Delete(id);
-                if (result == null)
+                if (result == "Student not found")
                 {
                     return NotFound("Student not found");
                 }
@@ -123,7 +144,8 @@ namespace SchoolAPI.Controllers
             try
             {
                 var result = await _studentService.FilterStudents(page, pageSize, searchTerm);
-                return Ok(result);
+                var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(result.Students);
+                return Ok((studentDTOs, studentDTOs.Count()));
             }
             catch (Exception ex)
             {

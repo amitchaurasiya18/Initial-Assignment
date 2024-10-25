@@ -13,6 +13,7 @@
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.10",
           "Microsoft.EntityFrameworkCore.Tools": "8.0.10",
           "Pomelo.EntityFrameworkCore.MySql": "8.0.2",
+          "SchoolAPI.Business": "1.0.0",
           "Swashbuckle.AspNetCore": "6.9.0"
         },
         "runtime": {
@@ -993,6 +994,15 @@
             "fileVersion": "6.0.21.52210"
           }
         }
+      },
+      "SchoolAPI.Business/1.0.0": {
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.10",
+          "Pomelo.EntityFrameworkCore.MySql": "8.0.2"
+        },
+        "runtime": {
+          "SchoolAPI.Business.dll": {}
+        }
       }
     }
   },
@@ -1610,6 +1620,11 @@
       "sha512": "sha512-IXoJOXIqc39AIe+CIR7koBtRGMiCt/LPM3lI+PELtDIy9XdyeSrwXFdWV9dzJ2Awl0paLWUaknLxFQ5HpHZUog==",
       "path": "system.windows.extensions/6.0.0",
       "hashPath": "system.windows.extensions.6.0.0.nupkg.sha512"
+    },
+    "SchoolAPI.Business/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     }
   }
 }

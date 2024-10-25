@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using SchoolAPI.DTO;
-using SchoolAPI.Models;
+using SchoolAPI.Business.Models;
 
 namespace SchoolAPI.Helper
 {

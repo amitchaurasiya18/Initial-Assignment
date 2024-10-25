@@ -1660,6 +1660,20 @@
             "rid": "win"
           }
         }
+      },
+      "SchoolAPI.Business/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.10",
+          "Pomelo.EntityFrameworkCore.MySql": "8.0.2"
+        },
+        "compile": {
+          "bin/placeholder/SchoolAPI.Business.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SchoolAPI.Business.dll": {}
+        }
       }
     }
   },
@@ -4643,6 +4657,11 @@
         "system.windows.extensions.nuspec",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "SchoolAPI.Business/1.0.0": {
+      "type": "project",
+      "path": "../SchoolAPI.Business/SchoolAPI.Business.csproj",
+      "msbuildProject": "../SchoolAPI.Business/SchoolAPI.Business.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -4652,23 +4671,24 @@
       "Microsoft.EntityFrameworkCore.SqlServer >= 8.0.10",
       "Microsoft.EntityFrameworkCore.Tools >= 8.0.10",
       "Pomelo.EntityFrameworkCore.MySql >= 8.0.2",
+      "SchoolAPI.Business >= 1.0.0",
       "Swashbuckle.AspNetCore >= 6.9.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Admin\\.nuget\\packages\\": {}
+    "C:\\Users\\amit.chaurasiya\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Office Training\\Initial-Assignment\\SchoolAPI\\SchoolAPI.csproj",
+      "projectUniqueName": "D:\\Initial Assignment\\SchoolAPI\\SchoolAPI.csproj",
       "projectName": "SchoolAPI",
-      "projectPath": "D:\\Office Training\\Initial-Assignment\\SchoolAPI\\SchoolAPI.csproj",
-      "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-      "outputPath": "D:\\Office Training\\Initial-Assignment\\SchoolAPI\\obj\\",
+      "projectPath": "D:\\Initial Assignment\\SchoolAPI\\SchoolAPI.csproj",
+      "packagesPath": "C:\\Users\\amit.chaurasiya\\.nuget\\packages\\",
+      "outputPath": "D:\\Initial Assignment\\SchoolAPI\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\amit.chaurasiya\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -4682,7 +4702,11 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "D:\\Initial Assignment\\SchoolAPI.Business\\SchoolAPI.Business.csproj": {
+              "projectPath": "D:\\Initial Assignment\\SchoolAPI.Business\\SchoolAPI.Business.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

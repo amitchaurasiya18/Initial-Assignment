@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
-using SchoolAPI.Data;
+using SchoolAPI.Business.Data;
 using SchoolAPI.Helper;
-using SchoolAPI.Repository;
-using SchoolAPI.Repository.Interfaces;
-using SchoolAPI.Services;
-using SchoolAPI.Services.Interfaces;
+using SchoolAPI.Business.Repository;
+using SchoolAPI.Business.Repository.Interfaces;
+using SchoolAPI.Business.Services;
+using SchoolAPI.Business.Services.Interfaces;
 
 
 
@@ -18,7 +18,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SchoolAPIDbContext>(
     options => options
-    .UseMySql(builder.Configuration.GetConnectionString("SchoolDb"), serverVersion));
+    .UseMySql(builder.Configuration.GetConnectionString("SchoolDb"), serverVersion,
+    b => b.MigrationsAssembly("SchoolAPI")));
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
