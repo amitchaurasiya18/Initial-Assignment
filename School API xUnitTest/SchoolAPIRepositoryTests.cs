@@ -6,16 +6,22 @@ using SchoolAPI.Business.Repository.Interfaces;
 
 public class StudentRepositoryTests
 {
-    private readonly SchoolAPIDbContext _context;
-    private readonly IStudentRepository _repository;
+    private SchoolAPIDbContext _context;
+    private IStudentRepository _repository;
 
-    public StudentRepositoryTests()
+    public async Task InitializeAsync()
     {
         var options = new DbContextOptionsBuilder<SchoolAPIDbContext>()
             .UseInMemoryDatabase(databaseName: "TestDatabase")
             .Options;
         _context = new SchoolAPIDbContext(options);
         _repository = new StudentRepository(_context);
+    }
+
+    public async Task DisposeAsync()
+    {
+        await _context.Database.EnsureDeletedAsync();
+        await _context.DisposeAsync();
     }
 
     [Fact]
