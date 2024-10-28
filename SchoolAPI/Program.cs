@@ -18,8 +18,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SchoolAPIDbContext>(
     options => options
-    .UseMySql(builder.Configuration.GetConnectionString("SchoolDb"), serverVersion,
-    b => b.MigrationsAssembly("SchoolAPI")));
+    .UseMySql(builder.Configuration.GetConnectionString("SchoolDb"), serverVersion));
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
