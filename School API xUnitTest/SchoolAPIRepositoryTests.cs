@@ -4,7 +4,7 @@ using SchoolAPI.Business.Models;
 using SchoolAPI.Business.Repository;
 using SchoolAPI.Business.Repository.Interfaces;
 
-public class StudentRepositoryTests
+public class StudentRepositoryTests : IAsyncLifetime
 {
     private SchoolAPIDbContext _context;
     private IStudentRepository _repository;
