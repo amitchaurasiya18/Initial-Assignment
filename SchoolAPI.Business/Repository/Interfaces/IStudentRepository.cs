@@ -8,7 +8,7 @@ namespace SchoolAPI.Business.Repository.Interfaces
         Task<IEnumerable<Student>> GetAll();
         Task<Student> GetById(int id);
         Task<Student> Update(Student student);
-        Task<string> Delete(int id);
+        Task<bool> Delete(int id);
         Task<(IEnumerable<Student>, int TotalCount)> FilterStudents(int page, int pageSize, string searchTerm); 
     }
 }

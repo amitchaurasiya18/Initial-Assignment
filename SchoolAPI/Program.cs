@@ -1,12 +1,14 @@
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
 using SchoolAPI.Business.Data;
 using SchoolAPI.Helper;
 using SchoolAPI.Business.Repository;
 using SchoolAPI.Business.Repository.Interfaces;
 using SchoolAPI.Business.Services;
 using SchoolAPI.Business.Services.Interfaces;
-
+using FluentValidation;
+using SchoolAPI.ExceptionHandler;
+using FluentValidation.AspNetCore;
+using SchoolAPI.Validators;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,8 +21,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SchoolAPIDbContext>(
     options => options
     .UseMySql(builder.Configuration.GetConnectionString("SchoolDb"), serverVersion));
+
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddFluentValidationAutoValidation();
+// builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddValidatorsFromAssemblyContaining<StudentValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<StudentUpdateValidator>();
+builder.Services.AddTransient<CustomExceptionHandler>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 builder.Services.AddCors(options =>
 {
@@ -36,7 +44,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -44,10 +52,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
+app.UseMiddleware<CustomExceptionHandler>();
 app.UseCors("AllowAll");
 app.MapControllers();
-
 app.Run();

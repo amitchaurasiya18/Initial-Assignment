@@ -5,7 +5,11 @@ using SchoolAPI.Business.Models;
 using SchoolAPI.Business.Services.Interfaces;
 using SchoolAPI.Validators;
 using AutoMapper;
-using SchoolAPI.Business;
+using SchoolAPI.Business.Repository.Interfaces;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using SchoolAPI.StaticFiles;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace SchoolAPI.Controllers
 {
@@ -13,144 +17,135 @@ namespace SchoolAPI.Controllers
     [ApiController]
     public class StudentController : ControllerBase
     {
+        private readonly IStudentRepository _studentRepository;
         private readonly IStudentService _studentService;
         private readonly IMapper _mapper;
         private const int PAGE = 1;
         private const int PAGE_SIZE = 10;
         private const string SEARCH_TERM = "";
 
-        public StudentController(IStudentService studentService, IMapper mapper)
+        public StudentController(IStudentRepository studentRepository, IMapper mapper, IStudentService studentService)
         {
-            _studentService = studentService;
+            _studentRepository = studentRepository;
             _mapper = mapper;
+            _studentService = studentService;
         }
 
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAllStudents()
         {
-            try
+            var students = await _studentRepository.GetAll();
+
+            if (students == null)
             {
-                var students = await _studentService.GetAll();
-                var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(students);
-                return Ok(studentDTOs);
+                throw new Exception(ErrorMessages.STUDENT_NOT_FOUND);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+
+            var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(students);
+            return Ok(studentDTOs);
+
         }
 
         [HttpGet("get-by-id/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            try
+
+            var student = await _studentRepository.GetById(id);
+            if (student == null)
             {
-                var student = await _studentService.GetById(id);
-                if (student == null)
-                {
-                    return NotFound("Student not found");
-                }
-                var studentDTO = _mapper.Map<StudentGetDTO>(student);
-                return Ok(studentDTO);
+                throw new Exception(ErrorMessages.STUDENT_NOT_FOUND);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var studentDTO = _mapper.Map<StudentGetDTO>(student);
+            return Ok(studentDTO);
         }
 
         [HttpPost("add")]
         public async Task<IActionResult> AddStudent([FromBody] StudentPostDTO studentPostDTO)
         {
-            StudentValidator validationRules = new StudentValidator();
-            ValidationResult results = validationRules.Validate(studentPostDTO);
-
-            if (!results.IsValid)
+            if (!ModelState.IsValid)
             {
-                foreach (var failure in results.Errors)
-                {
-                    return BadRequest($"Property {failure.PropertyName} failed validation. Error was: {failure.ErrorMessage}");
-                }
+                return BadRequest(new ValidationProblemDetails(ModelState));
             }
 
-            try
-            {
-                var student = _mapper.Map<Student>(studentPostDTO);
-                student.CreatedAt = DateTime.Now;
-                student.UpdatedAt = DateTime.Now;
-                student.Age = await _studentService.CalculateAge(student.DateOfBirth);
-                student.isActive = true;
+            var student = _mapper.Map<Student>(studentPostDTO);
+            student.CreatedAt = DateTime.Now;
+            student.UpdatedAt = DateTime.Now;
+            student.Age = await _studentService.CalculateAge(student.DateOfBirth);
+            student.isActive = true;
 
-                var addedStudent = await _studentService.Add(student);
-                var addedStudentDTO = _mapper.Map<StudentGetDTO>(addedStudent);
-                return Ok(addedStudentDTO);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var addedStudent = await _studentRepository.Add(student);
+            var addedStudentDTO = _mapper.Map<StudentGetDTO>(addedStudent);
+
+            return Ok(addedStudentDTO);
         }
 
+
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> UpdateStudent(int id, [FromBody] StudentPostDTO studentPostDTO)
+        public async Task<IActionResult> UpdateStudent(int id, [FromBody] StudentUpdateDTO studentUpdateDTO)
         {
-            try
+            var existingStudent = await _studentRepository.GetById(id);
+            if (existingStudent == null)
             {
-                var existingStudent = await _studentService.GetById(id);
-                if (existingStudent == null)
-                {
-                    return NotFound("Student not found");
-                }
-
-                existingStudent.FirstName = studentPostDTO.FirstName;
-                existingStudent.LastName = studentPostDTO.LastName;
-                existingStudent.Email = studentPostDTO.Email;
-                existingStudent.Phone = studentPostDTO.Phone;
-                existingStudent.DateOfBirth = studentPostDTO.DateOfBirth;
-                existingStudent.Age = await _studentService.CalculateAge(studentPostDTO.DateOfBirth);
-                existingStudent.UpdatedAt = DateTime.Now;
-
-                var updatedStudent = await _studentService.Update(id, existingStudent);
-                var updatedStudentDTO = _mapper.Map<StudentGetDTO>(updatedStudent);
-                return Ok(updatedStudentDTO);
+                throw new Exception(ErrorMessages.STUDENT_NOT_FOUND);
             }
-            catch (Exception ex)
+
+            if (!string.IsNullOrEmpty(studentUpdateDTO.FirstName))
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                existingStudent.FirstName = studentUpdateDTO.FirstName;
             }
+
+            if (!string.IsNullOrEmpty(studentUpdateDTO.LastName))
+            {
+                existingStudent.LastName = studentUpdateDTO.LastName;
+            }
+
+            if (!string.IsNullOrEmpty(studentUpdateDTO.Email))
+            {
+                existingStudent.Email = studentUpdateDTO.Email;
+            }
+
+            if (!string.IsNullOrEmpty(studentUpdateDTO.Phone))
+            {
+                existingStudent.Phone = studentUpdateDTO.Phone;
+            }
+
+            if (studentUpdateDTO.DateOfBirth != null)
+            {
+                existingStudent.DateOfBirth = (DateTime)studentUpdateDTO.DateOfBirth;
+                existingStudent.Age = await _studentService.CalculateAge((DateTime)studentUpdateDTO.DateOfBirth);
+            }
+
+            existingStudent.UpdatedAt = DateTime.Now;
+
+            var updatedStudent = await _studentRepository.Update(existingStudent);
+            var updatedStudentDTO = _mapper.Map<StudentGetDTO>(updatedStudent);
+            return Ok(updatedStudentDTO);
         }
 
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteStudent(int id)
         {
-            try
+            var student = await _studentRepository.GetById(id);
+            if (student == null)
             {
-                var result = await _studentService.Delete(id);
-                if (result == "Student not found")
-                {
-                    return NotFound("Student not found");
-                }
-                return Ok(result);
+                throw new Exception(ErrorMessages.STUDENT_NOT_FOUND);
             }
-            catch (Exception ex)
+            var result = await _studentRepository.Delete(student.Id);
+            if (!result)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                throw new Exception(ErrorMessages.INTERNAL_SERVER_ERROR);
             }
+            var studentDTO = _mapper.Map<StudentGetDTO>(student);
+            return Ok(studentDTO);
         }
+
 
         [HttpGet("filter-student")]
         public async Task<IActionResult> FilterStudents(int page = PAGE, int pageSize = PAGE_SIZE, string searchTerm = SEARCH_TERM)
         {
-            try
-            {
-                var result = await _studentService.FilterStudents(page, pageSize, searchTerm);
-                var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(result.Students);
-                return Ok((studentDTOs, studentDTOs.Count()));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var result = await _studentRepository.FilterStudents(page, pageSize, searchTerm);
+            var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(result.Item1);
+            return Ok(new FilteredStudent { Students = studentDTOs, TotalCount = result.TotalCount });
         }
     }
 }

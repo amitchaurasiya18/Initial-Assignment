@@ -20,17 +20,17 @@ namespace SchoolAPI.Business.Repository
             return student;
         }
 
-        public async Task<string> Delete(int id)
+        public async Task<bool> Delete(int id)
         {
             var student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.isActive ==true && s.Id == id);
             
             if (student == null)
             {
-                return "Student not found";
+                return false;
             }
             student.isActive = false;
             _schoolAPIDbContext.SaveChanges();
-            return "Student deleted successfully";
+            return true;
         }
 
         public async Task<(IEnumerable<Student>, int TotalCount)> FilterStudents(int page, int pageSize, string searchTerm)
@@ -46,6 +46,7 @@ namespace SchoolAPI.Business.Repository
                     (s.FirstName.Contains(searchTerm) ||
                      s.LastName.Contains(searchTerm) ||
                      s.Email.Contains(searchTerm) ||
+                     s.Phone.Contains(searchTerm) ||
                      s.Age.ToString().Contains(searchTerm))
                      && s.isActive == true);
             }
@@ -57,7 +58,7 @@ namespace SchoolAPI.Business.Repository
                 .Take(pageSize)
                 .ToListAsync();
 
-            return (students, totalCount);
+            return (students,totalCount);
         }
 
         public async Task<IEnumerable<Student>> GetAll()
