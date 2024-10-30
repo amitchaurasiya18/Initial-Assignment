@@ -6,7 +6,7 @@ namespace SchoolAPI.ExceptionHandler
     public class CustomExceptionHandler : IMiddleware
     {
         private readonly ILogger<CustomExceptionHandler> _logger;
- 
+
         public CustomExceptionHandler(ILogger<CustomExceptionHandler> logger)
         {
             _logger = logger;
@@ -22,24 +22,33 @@ namespace SchoolAPI.ExceptionHandler
                 await HandleExceptionAsync(context, ex);
             }
         }
- 
+
         private Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             var traceId = Guid.NewGuid();
-            _logger.LogError($"TraceId: {traceId}, Exception: {exception.Message}, StackTrace: {exception.StackTrace}");
- 
+            _logger.LogError($"TraceId: {traceId}, Path: {context.Request.Path}, Method: {context.Request.Method}, " +
+                             $"Exception: {exception.Message}, StackTrace: {exception.StackTrace}");
+
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
- 
-            var errorDetails = new ErrorDetails()
+
+            var (statusCode, errorMessage) = exception switch
+            {
+                KeyNotFoundException => (HttpStatusCode.NotFound, "Resource not found."),
+                UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Unauthorized access."),
+                _ => (HttpStatusCode.InternalServerError, "Internal Server Error from the custom middleware.")
+            };
+
+            context.Response.StatusCode = (int)statusCode;
+
+            var errorDetails = new ErrorDetails
             {
                 TraceId = traceId,
-                Message = "Internal Server Error from the custom middleware.",
+                Message = errorMessage,
                 StatusCode = context.Response.StatusCode,
                 Instance = context.Request.Path,
                 ExceptionMessage = exception.Message
             };
- 
+
             return context.Response.WriteAsJsonAsync(errorDetails);
         }
     }

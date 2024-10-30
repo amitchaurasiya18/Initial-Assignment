@@ -38,7 +38,7 @@ namespace SchoolAPI.Controllers
 
             if (students == null)
             {
-                throw new Exception(ErrorMessages.STUDENT_NOT_FOUND);
+                throw new KeyNotFoundException(ErrorMessages.STUDENT_NOT_FOUND);
             }
 
             var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(students);
@@ -53,7 +53,7 @@ namespace SchoolAPI.Controllers
             var student = await _studentRepository.GetById(id);
             if (student == null)
             {
-                throw new Exception(ErrorMessages.STUDENT_NOT_FOUND);
+                throw new KeyNotFoundException(ErrorMessages.STUDENT_NOT_FOUND);
             }
             var studentDTO = _mapper.Map<StudentGetDTO>(student);
             return Ok(studentDTO);
@@ -86,7 +86,7 @@ namespace SchoolAPI.Controllers
             var existingStudent = await _studentRepository.GetById(id);
             if (existingStudent == null)
             {
-                throw new Exception(ErrorMessages.STUDENT_NOT_FOUND);
+                throw new KeyNotFoundException(ErrorMessages.STUDENT_NOT_FOUND);
             }
 
             if (!string.IsNullOrEmpty(studentUpdateDTO.FirstName))
@@ -128,7 +128,7 @@ namespace SchoolAPI.Controllers
             var student = await _studentRepository.GetById(id);
             if (student == null)
             {
-                throw new Exception(ErrorMessages.STUDENT_NOT_FOUND);
+                throw new KeyNotFoundException(ErrorMessages.STUDENT_NOT_FOUND);
             }
             var result = await _studentRepository.Delete(student.Id);
             if (!result)

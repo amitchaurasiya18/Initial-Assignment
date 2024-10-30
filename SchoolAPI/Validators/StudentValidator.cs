@@ -1,35 +1,37 @@
 ﻿using FluentValidation;
 using SchoolAPI.DTO;
+using SchoolAPI.StaticFiles;
 
 namespace SchoolAPI.Validators
 {
     public class StudentValidator : AbstractValidator<StudentPostDTO>
     {
         private static readonly DateTime MinimumBirthDate = new DateTime(2014, 1, 1);
+        
         public StudentValidator() 
         {
             RuleFor(student => student.FirstName)
-                .MinimumLength(3).WithMessage("FirstName should have minimum 3 letters")
-                .MaximumLength(20).WithMessage("First Name should have only 20 letters")
-                .NotEmpty().WithMessage("First Name cannot be empty");
+                .MinimumLength(3).WithMessage(ValidationMessages.FIRSTNAME_MIN_LENGTH)
+                .MaximumLength(20).WithMessage(ValidationMessages.FIRSTNAME_MAX_LENGTH)
+                .NotEmpty().WithMessage(ValidationMessages.EMPTY_FIRSTNAME);
 
             RuleFor(student => student.LastName)
-                .MinimumLength(3).WithMessage("Last Name should have minimum 3 letters")
-                .MaximumLength(20).WithMessage("Last Name should have only 20 letters")
-                .NotEmpty().WithMessage("Last Name cannot be empty");
+                .MinimumLength(3).WithMessage(ValidationMessages.LASTNAME_MIN_LENGTH)
+                .MaximumLength(20).WithMessage(ValidationMessages.LASTNAME_MAX_LENGTH)
+                .NotEmpty().WithMessage(ValidationMessages.EMPTY_LASTNAME);
 
             RuleFor(student => student.Email)
-                .EmailAddress().WithMessage("Email Address not valid")
-                .NotEmpty().WithMessage("Email is required");
+                .EmailAddress().WithMessage(ValidationMessages.EMAIL_INVALID)
+                .NotEmpty().WithMessage(ValidationMessages.EMPTY_EMAIL);
 
             RuleFor(student => student.Phone)
-                .MaximumLength(10).WithMessage("Phone number cannot exceed 10 digits")
-                .NotEmpty().WithMessage("Phone number is required")
-                .NotEqual("0000000000").WithMessage("Not a valid phone number");
+                .MaximumLength(10).WithMessage(ValidationMessages.PHONE_MAX_LENGTH)
+                .NotEmpty().WithMessage(ValidationMessages.EMPTY_PHONE)
+                .NotEqual("0000000000").WithMessage(ValidationMessages.PHONE_INVALID);
 
             RuleFor(student => student.DateOfBirth)
-                .NotEmpty().WithMessage("Date of Birth is required")
-                .LessThan(MinimumBirthDate).WithMessage("Not a Valid Date of Birth");
+                .NotEmpty().WithMessage(ValidationMessages.EMPTY_DOB)
+                .LessThan(MinimumBirthDate).WithMessage(ValidationMessages.DOB_INVALID);
         }
     }
 }
