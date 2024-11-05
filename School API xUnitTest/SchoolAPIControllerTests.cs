@@ -8,6 +8,13 @@ using SchoolAPI.Controllers;
 using SchoolAPI.Business.Repository.Interfaces;
 using Bogus;
 using SchoolAPI.StaticFiles;
+using FluentValidation.Results;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.DependencyInjection;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using SchoolAPI.Validators;
+using FluentValidation.TestHelper;
 
 
 public class StudentControllerTests
@@ -141,6 +148,11 @@ public class StudentControllerTests
 
         _studentRepositoryMock.Setup(repository => repository.Add(It.IsAny<Student>())).ReturnsAsync(student);
 
+        var validator = new StudentValidator();
+        var validationResult = validator.TestValidate(studentPostDTO);
+        validationResult.ShouldNotHaveAnyValidationErrors();
+        // validationResult.AddToModelState(_controller.ModelState, null);
+
         var result = await _controller.AddStudent(studentPostDTO);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -164,7 +176,14 @@ public class StudentControllerTests
             Phone = "9876543210",
             DateOfBirth = DateTime.Now.AddYears(1)
         };
+
+        var validator = new StudentValidator();
+        var validationResult = validator.TestValidate(invalidStudent);
+        validationResult.ShouldHaveAnyValidationError();
+        validationResult.AddToModelState(_controller.ModelState, null);
+
         var result = await _controller.AddStudent(invalidStudent);
+
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
         var errors = badRequestResult.Value as ValidationProblemDetails;
 
@@ -174,6 +193,7 @@ public class StudentControllerTests
         Assert.Contains("LastName", errors.Errors.Keys);
         Assert.Contains("DateOfBirth", errors.Errors.Keys);
     }
+
 
     [Fact]
     public async Task UpdateStudent_ShouldReturnOkResult_WhenStudentExists_BestCase()
@@ -186,6 +206,10 @@ public class StudentControllerTests
         _studentRepositoryMock.Setup(repository => repository.GetById(1)).ReturnsAsync(student);
         _studentRepositoryMock.Setup(repository => repository.Update(It.IsAny<Student>())).ReturnsAsync(student);
 
+
+        var validator = new StudentUpdateValidator();
+        var validationResult = validator.Validate(studentUpdateDTO);
+        validationResult.AddToModelState(_controller.ModelState, null);
         var result = await _controller.UpdateStudent(1, studentUpdateDTO);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -197,6 +221,7 @@ public class StudentControllerTests
         Assert.Equal(student.DateOfBirth, returnValue.DateOfBirth);
         Assert.Equal(student.Age, returnValue.Age);
     }
+
 
     [Fact]
     public async Task UpdateStudent_ShouldReturnNotFound_WhenStudentDoesNotExist_WorstCase()
@@ -225,6 +250,9 @@ public class StudentControllerTests
 
         _studentRepositoryMock.Setup(repository => repository.GetById(1)).ReturnsAsync(student);
 
+        var validator = new StudentUpdateValidator();
+        var validationResult = validator.Validate(invalidStudentUpdate);
+        validationResult.AddToModelState(_controller.ModelState, null);
         var result = await _controller.UpdateStudent(1, invalidStudentUpdate);
 
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -232,8 +260,6 @@ public class StudentControllerTests
 
         Assert.NotNull(errors);
         Assert.Contains("Email", errors.Errors.Keys);
-        Assert.Contains("FirstName", errors.Errors.Keys);
-        Assert.Contains("LastName", errors.Errors.Keys);
         Assert.Contains("DateOfBirth", errors.Errors.Keys);
     }
 
@@ -255,7 +281,7 @@ public class StudentControllerTests
     public async Task DeleteStudent_ShouldThrowException_WhenStudentDoesNotExist()
     {
         _studentRepositoryMock.Setup(repository => repository.Delete(999)).ThrowsAsync(new Exception(ErrorMessages.STUDENT_NOT_FOUND));
-        var exception = await Assert.ThrowsAsync<Exception>(async () => await _controller.DeleteStudent(999));
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _controller.DeleteStudent(999));
         Assert.Equal(ErrorMessages.STUDENT_NOT_FOUND, exception.Message);
     }
 

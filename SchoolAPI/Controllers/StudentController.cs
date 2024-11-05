@@ -1,15 +1,10 @@
-﻿using FluentValidation.Results;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SchoolAPI.DTO;
 using SchoolAPI.Business.Models;
 using SchoolAPI.Business.Services.Interfaces;
-using SchoolAPI.Validators;
 using AutoMapper;
 using SchoolAPI.Business.Repository.Interfaces;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using SchoolAPI.StaticFiles;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace SchoolAPI.Controllers
 {
@@ -89,6 +84,11 @@ namespace SchoolAPI.Controllers
                 throw new KeyNotFoundException(ErrorMessages.STUDENT_NOT_FOUND);
             }
 
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new ValidationProblemDetails(ModelState));
+            }
+
             if (!string.IsNullOrEmpty(studentUpdateDTO.FirstName))
             {
                 existingStudent.FirstName = studentUpdateDTO.FirstName;
@@ -133,7 +133,7 @@ namespace SchoolAPI.Controllers
             var result = await _studentRepository.Delete(student.Id);
             if (!result)
             {
-                throw new Exception(ErrorMessages.INTERNAL_SERVER_ERROR);
+                throw new BadHttpRequestException(ErrorMessages.INTERNAL_SERVER_ERROR);
             }
             var studentDTO = _mapper.Map<StudentGetDTO>(student);
             return Ok(studentDTO);

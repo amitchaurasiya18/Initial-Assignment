@@ -197,4 +197,44 @@ public class StudentRepositoryTests : IAsyncLifetime
         Assert.Empty(students);
         Assert.Equal(0, totalCount);
     }
+
+    [Fact]
+    public async Task Update_ShouldUpdateStudentDetails_WhenStudentExists_BestCase()
+    {
+        var student = _studentFaker.Generate();
+        await _repository.Add(student);
+
+        student.FirstName = "UpdatedFirstName";
+        student.LastName = "UpdatedLastName";
+        student.Email = "updatedemail@example.com";
+        student.Phone = "9998887776";
+        student.Age = 25;
+
+        var result = await _repository.Update(student);
+
+        Assert.NotNull(result);
+        Assert.Equal("UpdatedFirstName", result.FirstName);
+        Assert.Equal("UpdatedLastName", result.LastName);
+        Assert.Equal("updatedemail@example.com", result.Email);
+        Assert.Equal("9998887776", result.Phone);
+        Assert.Equal(25, result.Age);
+
+        var updatedStudent = await _repository.GetById(student.Id);
+        Assert.NotNull(updatedStudent);
+        Assert.Equal("UpdatedFirstName", updatedStudent.FirstName);
+        Assert.Equal("UpdatedLastName", updatedStudent.LastName);
+        Assert.Equal("updatedemail@example.com", updatedStudent.Email);
+        Assert.Equal("9998887776", updatedStudent.Phone);
+        Assert.Equal(25, updatedStudent.Age);
+    }
+
+    [Fact]
+    public async Task Update_ShouldReturnNull_WhenStudentDoesNotExist_WorstCase()
+    {
+        var nonExistentStudent = _studentFaker.Generate();
+        nonExistentStudent.Id = 999;
+
+        await Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () => await _repository.Update(nonExistentStudent));
+    }
+
 }

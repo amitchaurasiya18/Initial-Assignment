@@ -8,7 +8,6 @@ using SchoolAPI.Business.Services.Interfaces;
 using FluentValidation;
 using SchoolAPI.ExceptionHandler;
 using FluentValidation.AspNetCore;
-using SchoolAPI.Validators;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,11 +23,10 @@ builder.Services.AddDbContext<SchoolAPIDbContext>(
 
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddFluentValidationAutoValidation();
-// builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-builder.Services.AddValidatorsFromAssemblyContaining<StudentValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<StudentUpdateValidator>();
-builder.Services.AddTransient<CustomExceptionHandler>();
+builder.Services.AddFluentValidationAutoValidation(fv => fv.DisableDataAnnotationsValidation = true);
+builder.Services.AddExceptionHandler<AppKeyNotFoundExceptionHandler>();
+builder.Services.AddExceptionHandler<AppInternalServerErrorExceptionHandler>();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 builder.Services.AddCors(options =>
 {
@@ -53,7 +51,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-app.UseMiddleware<CustomExceptionHandler>();
+app.UseExceptionHandler(_ => { });
 app.UseCors("AllowAll");
 app.MapControllers();
 app.Run();

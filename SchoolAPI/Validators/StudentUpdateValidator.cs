@@ -6,7 +6,7 @@ namespace SchoolAPI.Validators
 {
     public class StudentUpdateValidator : AbstractValidator<StudentUpdateDTO>
     {
-        private static readonly DateTime MinimumBirthDate = new DateTime(2014, 1, 1);
+        private static readonly DateTime MinimumBirthDate = new DateTime(2019, 1, 1);
         
         public StudentUpdateValidator() 
         {
