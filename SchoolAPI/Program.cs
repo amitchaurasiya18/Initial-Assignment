@@ -8,13 +8,42 @@ using SchoolAPI.Business.Services.Interfaces;
 using FluentValidation;
 using SchoolAPI.ExceptionHandler;
 using FluentValidation.AspNetCore;
-
+using System.Net;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using SchoolAPI.DTO;
 
 var builder = WebApplication.CreateBuilder(args);
 var serverVersion = ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("SchoolDb"));
 // Add services to the container.
 
-builder.Services.AddControllers();
+// builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(_ => "This field is required.");
+}).ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(e => e.Value.Errors.Count > 0)
+            .ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.Errors.Select(err => err.ErrorMessage).ToArray()
+            );
+
+        var errorDetails = new ErrorDetails
+        {
+            Message = "One or more validation errors occurred.",
+            StatusCode = (int)HttpStatusCode.BadRequest,
+            ExceptionMessage = "Validation failed.",
+            Errors = errors
+        };
+
+        return new BadRequestObjectResult(errorDetails);
+    };
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SchoolAPIDbContext>(
@@ -23,7 +52,7 @@ builder.Services.AddDbContext<SchoolAPIDbContext>(
 
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddFluentValidationAutoValidation(fv => fv.DisableDataAnnotationsValidation = true);
+builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddExceptionHandler<AppKeyNotFoundExceptionHandler>();
 builder.Services.AddExceptionHandler<AppInternalServerErrorExceptionHandler>();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
