@@ -10,7 +10,6 @@ using SchoolAPI.ExceptionHandler;
 using FluentValidation.AspNetCore;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SchoolAPI.DTO;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,7 +69,6 @@ builder.Services.AddCors(options =>
 
 
 var app = builder.Build();
-
 
 if (app.Environment.IsDevelopment())
 {

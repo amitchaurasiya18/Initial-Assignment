@@ -1,14 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SchoolAPI.DTO;
-using SchoolAPI.Business.Models;
-using SchoolAPI.Business.Services.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using SchoolAPI.Business.Models;
 using SchoolAPI.Business.Repository.Interfaces;
+using SchoolAPI.Business.Services.Interfaces;
+using SchoolAPI.DTO;
 using SchoolAPI.StaticFiles;
 
 namespace SchoolAPI.Controllers
 {
-    [Route("student")]
+    [Route("[controller]")]
     [ApiController]
     public class StudentController : ControllerBase
     {
@@ -26,8 +30,8 @@ namespace SchoolAPI.Controllers
             _studentService = studentService;
         }
 
-        [HttpGet("get-all")]
-        public async Task<IActionResult> GetAllStudents()
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<StudentGetDTO>>> GetAllStudents()
         {
             var students = await _studentRepository.GetAll();
 
@@ -41,10 +45,9 @@ namespace SchoolAPI.Controllers
 
         }
 
-        [HttpGet("get-by-id/{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<StudentGetDTO>> GetById(int id)
         {
-
             var student = await _studentRepository.GetById(id);
             if (student == null)
             {
@@ -54,14 +57,9 @@ namespace SchoolAPI.Controllers
             return Ok(studentDTO);
         }
 
-        [HttpPost("add")]
-        public async Task<IActionResult> AddStudent([FromBody] StudentPostDTO studentPostDTO)
+        [HttpPost]
+        public async Task<ActionResult<StudentGetDTO>> AddStudent([FromBody] StudentPostDTO studentPostDTO)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new ValidationProblemDetails(ModelState));
-            }
-
             var student = _mapper.Map<Student>(studentPostDTO);
             student.CreatedAt = DateTime.Now;
             student.UpdatedAt = DateTime.Now;
@@ -75,18 +73,13 @@ namespace SchoolAPI.Controllers
         }
 
 
-        [HttpPut("update/{id}")]
-        public async Task<IActionResult> UpdateStudent(int id, [FromBody] StudentUpdateDTO studentUpdateDTO)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<StudentGetDTO>> UpdateStudent(int id, [FromBody] StudentUpdateDTO studentUpdateDTO)
         {
             var existingStudent = await _studentRepository.GetById(id);
             if (existingStudent == null)
             {
                 throw new KeyNotFoundException(ErrorMessages.STUDENT_NOT_FOUND);
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new ValidationProblemDetails(ModelState));
             }
 
             if (!string.IsNullOrEmpty(studentUpdateDTO.FirstName))
@@ -122,8 +115,8 @@ namespace SchoolAPI.Controllers
             return Ok(updatedStudentDTO);
         }
 
-        [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> DeleteStudent(int id)
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<StudentGetDTO>> DeleteStudent(int id)
         {
             var student = await _studentRepository.GetById(id);
             if (student == null)
@@ -141,7 +134,7 @@ namespace SchoolAPI.Controllers
 
 
         [HttpGet("filter-student")]
-        public async Task<IActionResult> FilterStudents(int page = PAGE, int pageSize = PAGE_SIZE, string searchTerm = SEARCH_TERM)
+        public async Task<ActionResult<FilteredStudent>> FilterStudents(int page = PAGE, int pageSize = PAGE_SIZE, string searchTerm = SEARCH_TERM)
         {
             var result = await _studentRepository.FilterStudents(page, pageSize, searchTerm);
             var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(result.Item1);

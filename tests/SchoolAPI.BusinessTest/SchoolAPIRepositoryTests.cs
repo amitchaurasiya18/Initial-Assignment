@@ -236,5 +236,4 @@ public class StudentRepositoryTests : IAsyncLifetime
 
         await Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () => await _repository.Update(nonExistentStudent));
     }
-
 }
