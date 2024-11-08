@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -35,6 +36,7 @@ namespace SchoolAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin, Teacher")]
         public async Task<ActionResult<IEnumerable<StudentGetDTO>>> GetAllStudents()
         {
             var students = await _studentRepository.GetAll();
@@ -50,6 +52,7 @@ namespace SchoolAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin, Teacher")]
         public async Task<ActionResult<StudentGetDTO>> GetById(int id)
         {
             var student = await _studentRepository.GetById(id);
@@ -62,6 +65,7 @@ namespace SchoolAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<StudentGetDTO>> AddStudent([FromBody] StudentPostDTO studentPostDTO)
         {
             var student = _mapper.Map<Student>(studentPostDTO);
@@ -85,6 +89,7 @@ namespace SchoolAPI.Controllers
 
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<StudentGetDTO>> UpdateStudent(int id, [FromBody] StudentUpdateDTO studentUpdateDTO)
         {
             var existingStudent = await _studentRepository.GetById(id);
@@ -127,6 +132,7 @@ namespace SchoolAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<StudentGetDTO>> DeleteStudent(int id)
         {
             var student = await _studentRepository.GetById(id);
@@ -145,6 +151,7 @@ namespace SchoolAPI.Controllers
 
 
         [HttpGet("filter-student")]
+        [Authorize(Roles = "Admin, Teacher")]
         public async Task<ActionResult<FilteredStudent>> FilterStudents(int page = PAGE, int pageSize = PAGE_SIZE, string searchTerm = SEARCH_TERM)
         {
             var result = await _studentRepository.FilterStudents(page, pageSize, searchTerm);

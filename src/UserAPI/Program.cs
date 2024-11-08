@@ -6,6 +6,8 @@ using Microsoft.OpenApi.Models;
 using UserAPI.Business.Data;
 using UserAPI.Business.Repository;
 using UserAPI.Business.Repository.Interfaces;
+using UserAPI.Business.Services;
+using UserAPI.Business.Services.Interfaces;
 using UserAPI.ExceptionHandler;
 using UserAPI.Helper;
 
@@ -65,6 +67,7 @@ builder.Services.AddDbContext<UserAPIDbContext>(
     options => options
     .UseMySql(builder.Configuration.GetConnectionString("SchoolUserDb"), serverVersion));
 builder.Services.AddScoped<IUserRepository,UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 builder.Services.AddCors(options =>
@@ -88,6 +91,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowAll");
 app.MapControllers();

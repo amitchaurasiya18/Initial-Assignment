@@ -14,5 +14,6 @@ namespace UserAPI.Business.Repository.Interfaces
         Task<User> Update(User user);
         Task<bool> Delete(int id);
         Task<User?> GetByEmail(string email);
+        Task<User?> GetByUsername(string username);
     }
 }

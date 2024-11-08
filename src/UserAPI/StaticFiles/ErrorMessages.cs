@@ -12,5 +12,7 @@ namespace UserAPI.StaticFiles
         public const string USER_DELETED = "User Deleted Successfully";
         public const string INTERNAL_SERVER_ERROR = "Internal Server Error";
         public const string EMAIL_ALREADY_REGISTERED = " Email Already Registered";
+        public const string EMPTY_CREDENTIALS = " Credentials Needed";
+        public const string INVALID_CREDENTIALS = " Invalid Credentials";
     }
 }

@@ -8,6 +8,6 @@ namespace UserAPI.Business.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<string> Login(LoginRequest loginRequest);
+        string Login(LoginRequest loginRequest);
     }
 }

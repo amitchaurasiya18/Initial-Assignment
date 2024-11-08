@@ -57,5 +57,10 @@ namespace UserAPI.Business.Repository
             return user;
         }
 
+        public async Task<User?> GetByUsername(string username)
+        {
+            User? user = await _context.Users.FirstOrDefaultAsync(s => s.IsActive == true && s.Username == username);
+            return user;
+        }
     }
 }
