@@ -8,13 +8,16 @@ namespace SchoolAPI.Business.Services
     {
         public async Task<int> CalculateAge(DateTime dateOfBirth)
         {
-            DateTime today = DateTime.Now;
-            int age = today.Year - dateOfBirth.Year;
-            if (dateOfBirth.Year > today.Year)
+            return await Task.Run(() =>
             {
-                age--;
-            }
-            return age;
+                DateTime today = DateTime.Now;
+                int age = today.Year - dateOfBirth.Year;
+                if (dateOfBirth > today.AddYears(-age))
+                {
+                    age--;
+                }
+                return age;
+            });
         }
     }
 }

@@ -1,4 +1,9 @@
-namespace SchoolAPI.DTO
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace UserAPI.DTO
 {
     public class ErrorResponse
     {

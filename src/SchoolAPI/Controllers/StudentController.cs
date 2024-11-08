@@ -3,16 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using SchoolAPI.Business.Models;
 using SchoolAPI.Business.Repository.Interfaces;
 using SchoolAPI.Business.Services.Interfaces;
+using SchoolAPI.CustomExceptions;
 using SchoolAPI.DTO;
 using SchoolAPI.StaticFiles;
 
 namespace SchoolAPI.Controllers
 {
     [Route("[controller]")]
+    [ServiceFilter(typeof(ModelValidationFilter))]
     [ApiController]
     public class StudentController : ControllerBase
     {
@@ -37,7 +41,7 @@ namespace SchoolAPI.Controllers
 
             if (students == null)
             {
-                throw new KeyNotFoundException(ErrorMessages.STUDENT_NOT_FOUND);
+                throw new NoStudentsFound(ErrorMessages.NO_STUDENTS_FOUND);
             }
 
             var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(students);
@@ -51,7 +55,7 @@ namespace SchoolAPI.Controllers
             var student = await _studentRepository.GetById(id);
             if (student == null)
             {
-                throw new KeyNotFoundException(ErrorMessages.STUDENT_NOT_FOUND);
+                throw new StudentNotFound(ErrorMessages.STUDENT_NOT_FOUND);
             }
             var studentDTO = _mapper.Map<StudentGetDTO>(student);
             return Ok(studentDTO);
@@ -61,10 +65,17 @@ namespace SchoolAPI.Controllers
         public async Task<ActionResult<StudentGetDTO>> AddStudent([FromBody] StudentPostDTO studentPostDTO)
         {
             var student = _mapper.Map<Student>(studentPostDTO);
+
+            var alreadyRegisteredStudent = await _studentRepository.GetByEmail(student.Email);
+
+            if (alreadyRegisteredStudent!= null)
+            {
+                throw new EmailAlreadyRegistered(student.Email + ErrorMessages.EMAIL_ALREADY_REGISTERED);
+            }
+
             student.CreatedAt = DateTime.Now;
             student.UpdatedAt = DateTime.Now;
             student.Age = await _studentService.CalculateAge(student.DateOfBirth);
-            student.isActive = true;
 
             var addedStudent = await _studentRepository.Add(student);
             var addedStudentDTO = _mapper.Map<StudentGetDTO>(addedStudent);
@@ -79,7 +90,7 @@ namespace SchoolAPI.Controllers
             var existingStudent = await _studentRepository.GetById(id);
             if (existingStudent == null)
             {
-                throw new KeyNotFoundException(ErrorMessages.STUDENT_NOT_FOUND);
+                throw new StudentNotFound(ErrorMessages.STUDENT_NOT_FOUND);
             }
 
             if (!string.IsNullOrEmpty(studentUpdateDTO.FirstName))

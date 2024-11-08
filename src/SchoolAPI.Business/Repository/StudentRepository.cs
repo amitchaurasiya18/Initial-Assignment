@@ -22,12 +22,7 @@ namespace SchoolAPI.Business.Repository
 
         public async Task<bool> Delete(int id)
         {
-            var student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.isActive ==true && s.Id == id);
-            
-            if (student == null)
-            {
-                return false;
-            }
+            Student? student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.isActive ==true && s.Id == id) ?? new Student();
             student.isActive = false;
             _schoolAPIDbContext.SaveChanges();
             return true;
@@ -66,9 +61,17 @@ namespace SchoolAPI.Business.Repository
             return await _schoolAPIDbContext.Students.Where(s => s.isActive == true).ToListAsync();
         }
 
-        public async Task<Student> GetById(int id)
+        public async Task<Student> GetByEmail(string email)
         {
-            return await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.Id == id && s.isActive == true);
+            Student student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.isActive == true && s.Email == email)
+                                ?? new Student();
+            return student;
+        }
+
+        public async Task<Student?> GetById(int id)
+        {
+            Student? student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.Id == id && s.isActive == true);
+            return student;
         }
 
         public async Task<Student> Update(Student student)
