@@ -21,6 +21,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseOcelot();
+await app.UseOcelot();
 app.Run();
 

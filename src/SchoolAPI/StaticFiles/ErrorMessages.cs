@@ -7,5 +7,7 @@ namespace SchoolAPI.StaticFiles
         public const string STUDENT_DELETED = "Student Deleted Successfully";
         public const string INTERNAL_SERVER_ERROR = "Internal Server Error";
         public const string EMAIL_ALREADY_REGISTERED = " Email Already Registered";
+        public const string INVALID_PAGE_NUMBER = "Invalid Page Number";
+        public const string INVALID_PAGE_SIZE = "Invalid Page Size";
     }
 }

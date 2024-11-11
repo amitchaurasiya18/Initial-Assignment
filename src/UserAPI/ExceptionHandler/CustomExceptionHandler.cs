@@ -48,6 +48,18 @@ namespace UserAPI.ExceptionHandler
                 return true;
             }
 
+            if (exception is InvalidCredentials invalidCredentials)
+            {
+                var response = new ErrorResponse()
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ErrorMessage = invalidCredentials.Message
+                };
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await httpContext.Response.WriteAsJsonAsync(response);
+                return true;
+            }
+
             return false;
         }
     }

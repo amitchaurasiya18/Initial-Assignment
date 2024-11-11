@@ -51,6 +51,30 @@ namespace SchoolAPI.ExceptionHandler
                 return true;
             }
 
+            if (exception is InvalidPageNumber invalidPageNumber)
+            {
+                var response = new ErrorResponse()
+                {
+                    StatusCode = StatusCodes.Status406NotAcceptable,
+                    ErrorMessage = invalidPageNumber.Message
+                };
+                httpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+                await httpContext.Response.WriteAsJsonAsync(response);
+                return true;
+            }
+
+            if (exception is InvalidPageSize invalidPageSize)
+            {
+                var response = new ErrorResponse()
+                {
+                    StatusCode = StatusCodes.Status406NotAcceptable,
+                    ErrorMessage = invalidPageSize.Message
+                };
+                httpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+                await httpContext.Response.WriteAsJsonAsync(response);
+                return true;
+            }
+
             return false;
         }
     }

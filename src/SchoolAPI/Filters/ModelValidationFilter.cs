@@ -22,7 +22,7 @@ public class ModelValidationFilter : IActionFilter
 
             var errorDetails = new ErrorDetails
             {
-                Message = "One or more validation errors occurred from Amit",
+                Message = "One or more validation errors occurred.",
                 StatusCode = (int)HttpStatusCode.BadRequest,
                 ExceptionMessage = "Validation failed.",
                 Errors = errors
