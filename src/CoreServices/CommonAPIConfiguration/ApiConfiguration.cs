@@ -1,6 +1,7 @@
 using System.Text;
 using CoreServices.CustomExceptions;
 using CoreServices.ExceptionHandler;
+using CoreServices.Filters;
 using CoreServices.StaticFiles;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -32,11 +33,11 @@ namespace CoreServices.CommonAPIConfiguration
             await context.Response.WriteAsJsonAsync(responseObj);
         }
         
-        public static void AddCommonServices(this IServiceCollection services, IConfiguration configuration, Type autoMapperProfileType, string xmlPath, Type filterType)
+        public static void AddCommonServices(this IServiceCollection services, IConfiguration configuration, Type autoMapperProfileType, string xmlPath)
         {
 
             services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
-            services.AddControllers(options => options.Filters.Add(new TypeFilterAttribute(filterType)));
+            services.AddControllers(options => options.Filters.Add<ModelValidationFilter>());
             services.AddFluentValidationAutoValidation(fv => fv.DisableDataAnnotationsValidation = true);
             services.AddAutoMapper(autoMapperProfileType.Assembly);
             services.AddCors(options =>

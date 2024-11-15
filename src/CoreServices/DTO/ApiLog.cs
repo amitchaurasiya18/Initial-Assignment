@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SchoolAPI.DTO
+namespace CoreServices.DTO
 {
     public class ApiLog
     {

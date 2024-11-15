@@ -7,7 +7,6 @@ using UserAPI.Business.Models;
 using UserAPI.Business.Repository.Interfaces;
 using UserAPI.DTO;
 using UserAPI.StaticFiles;
-using UserAPI.Filters;
 
 namespace UserAPI.Controllers
 {

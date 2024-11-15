@@ -8,13 +8,12 @@ using UserAPI.Business.Repository;
 using UserAPI.Business.Repository.Interfaces;
 using UserAPI.Business.Services;
 using UserAPI.Business.Services.Interfaces;
-using UserAPI.Filters;
 using UserAPI.Helper;
 
 var builder = WebApplication.CreateBuilder(args);
 var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
 
-builder.Services.AddCommonServices(builder.Configuration,typeof(AutoMapperProfile),xmlPath,typeof(ModelValidationFilter));
+builder.Services.AddCommonServices(builder.Configuration,typeof(AutoMapperProfile),xmlPath);
 builder.AddDbContextConfiguration<UserAPIDbContext>("SchoolUserDb");
 builder.AddSerilogLogging();
 

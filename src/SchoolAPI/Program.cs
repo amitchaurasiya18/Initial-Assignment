@@ -13,7 +13,7 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
 
-builder.Services.AddCommonServices(builder.Configuration,typeof(AutoMapperProfiles),xmlPath,typeof(ModelValidationFilter));
+builder.Services.AddCommonServices(builder.Configuration,typeof(AutoMapperProfiles),xmlPath);
 builder.AddDbContextConfiguration<SchoolAPIDbContext>("SchoolDb");
 builder.AddSerilogLogging();
 

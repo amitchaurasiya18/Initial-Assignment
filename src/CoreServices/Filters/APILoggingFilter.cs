@@ -2,7 +2,8 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
-using SchoolAPI.DTO;
+using CoreServices.DTO;
+using Microsoft.AspNetCore.Http;
 
 namespace SchoolAPI.Filters
 {
