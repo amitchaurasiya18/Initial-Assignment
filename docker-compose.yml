@@ -1,0 +1,38 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
+
+version: '3.4'
+
+services:
+  schoolapi:
+    build:
+      context: .
+      dockerfile: src/SchoolAPI/Dockerfile
+    ports:
+      - 5206:5206
+    networks:
+      - gateway_network
+
+  userapi:
+    build:
+      context: .
+      dockerfile: src/UserAPI/Dockerfile
+    ports:
+      - 5050:5050
+    networks:
+      - gateway_network
+
+  apigateway:
+    build:
+      context: .
+      dockerfile: src/API.Gateway/Dockerfile
+    ports:
+      - 5044:5044
+    networks:
+      - gateway_network
+    depends_on:
+      - schoolapi
+      - userapi
+  
+networks:
+  gateway_network:
+    driver: bridge

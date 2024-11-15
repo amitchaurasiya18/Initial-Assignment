@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using CoreServices.DTO;
 using Microsoft.AspNetCore.Mvc;
 using UserAPI.Business.Models;
 using UserAPI.Business.Repository.Interfaces;
@@ -31,14 +32,14 @@ namespace UserAPI.Controllers
         [ProducesResponseType(typeof(string), 200)]
         public async Task<ActionResult<string>> Login(LoginRequest loginRequest)
         {
-            var user = await _userRepository.GetByUsername(loginRequest.Username);
+            var user = await _userRepository.GetByEmail(loginRequest.Email);
 
             if (user == null || !BCrypt.Net.BCrypt.EnhancedVerify(loginRequest.Password, user.Password))
             {
                 return BadRequest(ErrorMessages.INVALID_CREDENTIALS);
             }
 
-            var token = _authService.Login(loginRequest);
+            var token = _authService.Login(user);
             return Ok(token);
         }
     }

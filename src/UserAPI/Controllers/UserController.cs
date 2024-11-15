@@ -1,23 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
-using BCrypt.Net;
+using CoreServices.StaticFiles;
+using CoreServices.CustomExceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserAPI.Business.Models;
 using UserAPI.Business.Repository.Interfaces;
-using UserAPI.Business.Services.Interfaces;
-using UserAPI.CustomExceptions;
 using UserAPI.DTO;
 using UserAPI.StaticFiles;
+using UserAPI.Filters;
 
 namespace UserAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = $"{AuthorizationRoles.ADMIN}")]
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _userRepository;

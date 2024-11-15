@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UserAPI.Business\UserAPI.Business.csproj" />
+    <ProjectReference Include="..\CoreServices\CoreServices.csproj" />
   </ItemGroup>
 
 </Project>

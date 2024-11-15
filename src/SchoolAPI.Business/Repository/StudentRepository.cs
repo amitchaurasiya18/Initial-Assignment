@@ -63,8 +63,7 @@ namespace SchoolAPI.Business.Repository
 
         public async Task<Student> GetByEmail(string email)
         {
-            Student student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.isActive == true && s.Email == email)
-                                ?? new Student();
+            Student student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.isActive == true && s.Email == email);
             return student;
         }
 
