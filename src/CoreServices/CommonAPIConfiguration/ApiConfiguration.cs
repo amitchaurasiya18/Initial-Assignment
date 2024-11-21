@@ -1,5 +1,6 @@
 using System.Text;
 using CoreServices.CustomExceptions;
+using CoreServices.DTO;
 using CoreServices.ExceptionHandler;
 using CoreServices.Filters;
 using CoreServices.StaticFiles;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -32,7 +34,7 @@ namespace CoreServices.CommonAPIConfiguration
             };
             await context.Response.WriteAsJsonAsync(responseObj);
         }
-        
+
         public static void AddCommonServices(this IServiceCollection services, IConfiguration configuration, Type autoMapperProfileType, string xmlPath)
         {
 
@@ -169,6 +171,22 @@ namespace CoreServices.CommonAPIConfiguration
             var serverVersion = ServerVersion.AutoDetect(builder.Configuration.GetConnectionString(connectionString));
             builder.Services.AddDbContext<TContext>(options =>
                 options.UseMySql(builder.Configuration.GetConnectionString(connectionString), serverVersion));
+        }
+
+        public static void ConfigureHealthChecks(this IServiceCollection services, IConfiguration configuration, string connectionString)
+        {
+            services.AddHealthChecks()
+            .AddMySql(configuration.GetConnectionString(connectionString));
+                
+
+            // services.AddHealthChecksUI(opt =>
+            // {
+            //     opt.SetEvaluationTimeInSeconds(10);
+            //     opt.MaximumHistoryEntriesPerEndpoint(60);   
+            //     opt.SetApiMaxActiveRequests(1);   
+            //     opt.AddHealthCheckEndpoint("feedback api", "http://schoolapi:5206/api/health");
+
+            // }).AddInMemoryStorage();
         }
     }
 }

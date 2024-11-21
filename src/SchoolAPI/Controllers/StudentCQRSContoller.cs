@@ -1,4 +1,7 @@
-using System.Net;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using CoreServices.CustomExceptions;
 using CoreServices.StaticFiles;
@@ -15,23 +18,22 @@ using SchoolAPI.StaticFiles;
 
 namespace SchoolAPI.Controllers
 {
-    [Route("[controller]")]
-    [Authorize]
     [ApiController]
-    public class StudentController : ControllerBase
+    [Route("api/[controller]")]
+    public class StudentCQRSContoller : ControllerBase
     {
-       private readonly IStudentRepository _studentRepository;
+
+        private readonly IStudentRepository _studentRepository;
         private readonly IStudentService _studentService;
         private readonly IMapper _mapper;
-        private const int PAGE = 1;
-        private const int PAGE_SIZE = 10;
-        private const string SEARCH_TERM = "";
+        private readonly IMediator _mediator;
 
-        public StudentController(IStudentRepository studentRepository, IMapper mapper, IStudentService studentService)
+        public StudentCQRSContoller(IStudentRepository studentRepository, IMapper mapper, IStudentService studentService, IMediator mediator)
         {
             _studentRepository = studentRepository;
             _mapper = mapper;
             _studentService = studentService;
+            _mediator = mediator;
         }
 
         /// <summary>
@@ -45,7 +47,7 @@ namespace SchoolAPI.Controllers
         [ProducesResponseType(200, Type = typeof(IEnumerable<StudentGetDTO>))]
         public async Task<ActionResult<IEnumerable<StudentGetDTO>>> GetAllStudents()
         {
-            var students = await _studentRepository.GetAll();
+            var students = await _mediator.Send(new GetAllStudentQuery());
             var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(students);
             return Ok(studentDTOs);
         }
@@ -62,42 +64,13 @@ namespace SchoolAPI.Controllers
         [ProducesResponseType(200, Type = typeof(StudentGetDTO))]
         public async Task<ActionResult<StudentGetDTO>> GetById(int id)
         {
-            var student = await _studentRepository.GetById(id);
+            var student = await _mediator.Send(new GetStudentByIdQuery() { Id = id });
             if (student == null)
             {
                 return NotFound(ErrorMessages.STUDENT_NOT_FOUND);
             }
             var studentDTO = _mapper.Map<StudentGetDTO>(student);
             return Ok(studentDTO);
-        }
-
-        /// <summary>
-        /// Filters students based on search term, page number, and page size.
-        /// </summary>
-        /// <param name="page">Page number (default is 1)</param>
-        /// <param name="pageSize">Page size (default is 10)</param>
-        /// <param name="searchTerm">Search term to filter students</param>
-        /// <returns>List of filtered students</returns>
-        /// <response code="200">Returns filtered students</response>
-        /// <response code="406">Non-acceptable Input for Page number or page size</response>
-        /// <response code="401">Unauthorized request</response>
-        [HttpGet("filter-student")]
-        [ProducesResponseType(200, Type = typeof(FilteredStudent))]
-        public async Task<ActionResult<FilteredStudent>> FilterStudents(int page = PAGE, int pageSize = PAGE_SIZE, string searchTerm = SEARCH_TERM)
-        {
-            if (page < 0)
-            {
-                throw new InvalidPageNumber(ErrorMessages.INVALID_PAGE_NUMBER);
-            }
-
-            if (pageSize <= 0)
-            {
-                throw new InvalidPageSize(ErrorMessages.INVALID_PAGE_SIZE);
-            }
-
-            var result = await _studentRepository.FilterStudents(page, pageSize, searchTerm);
-            var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(result.Item1);
-            return Ok(new FilteredStudent { Students = studentDTOs, TotalCount = result.TotalCount });
         }
 
         /// <summary>
@@ -122,12 +95,16 @@ namespace SchoolAPI.Controllers
             {
                 throw new EmailAlreadyRegistered(student.Email + ErrorMessages.EMAIL_ALREADY_REGISTERED);
             }
-
-            student.CreatedAt = DateTime.Now;
-            student.UpdatedAt = DateTime.Now;
             student.Age = _studentService.CalculateAge(student.DateOfBirth);
 
-            var addedStudent = await _studentRepository.Add(student);
+            var addedStudent = await _mediator.Send(new AddStudentCommand(
+                student.FirstName,
+                student.LastName,
+                student.Email,
+                student.Phone,
+                student.DateOfBirth,
+                student.Age
+            ));
             var addedStudentDTO = _mapper.Map<StudentGetDTO>(addedStudent);
 
             return Ok(addedStudentDTO);
@@ -181,8 +158,15 @@ namespace SchoolAPI.Controllers
             }
 
             existingStudent.UpdatedAt = DateTime.Now;
-
-            var updatedStudent = await _studentRepository.Update(existingStudent);
+            var dateOfBirth = studentUpdateDTO.DateOfBirth ?? existingStudent.DateOfBirth;
+            var updatedStudent = await _mediator.Send(new UpdateStudentCommand(
+                id,
+                studentUpdateDTO.FirstName ?? existingStudent.FirstName,
+                studentUpdateDTO.LastName ?? existingStudent.LastName,
+                studentUpdateDTO.Email ?? existingStudent.Email,
+                studentUpdateDTO.Phone ?? existingStudent.Phone,
+                dateOfBirth
+            ));
             var updatedStudentDTO = _mapper.Map<StudentGetDTO>(updatedStudent);
             return Ok(updatedStudentDTO);
         }
@@ -206,14 +190,14 @@ namespace SchoolAPI.Controllers
             {
                 return NotFound(ErrorMessages.STUDENT_NOT_FOUND);
             }
-            var result = await _studentRepository.Delete(student.Id);
+            var result = await _mediator.Send(new DeleteStudentCommand() { Id = id });
             if (!result)
             {
                 return BadRequest(ErrorMessages.INTERNAL_SERVER_ERROR);
             }
             var studentDTO = _mapper.Map<StudentGetDTO>(student);
             return Ok(studentDTO);
+
         }
     }
 }
-

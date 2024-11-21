@@ -5,6 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "C#: SchoolAPI Debug",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/src/SchoolAPI/SchoolAPI.csproj"
+        },
+        {
             "name": "C#: UserAPI Debug",
             "type": "dotnet",
             "request": "launch",

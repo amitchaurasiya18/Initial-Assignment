@@ -4,6 +4,6 @@ namespace SchoolAPI.Business.Services.Interfaces
 {
     public interface IStudentService
     {
-        Task<int> CalculateAge(DateTime dateOfBirth);
+        int CalculateAge(DateTime dateOfBirth);
     }
 }
