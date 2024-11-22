@@ -11,10 +11,10 @@ using SchoolAPI.Business.Repository;
 using SchoolAPI.Business.Repository.Interfaces;
 using SchoolAPI.Business.Services;
 using SchoolAPI.Business.Services.Interfaces;
-using SchoolAPI.CustomHealthCheck;
 using SchoolAPI.Helper;
 using Serilog;
 using SchoolAPI.Business.Handlers;
+using CoreServices.CustomHealthCheck;
 
 var builder = WebApplication.CreateBuilder(args);
 var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");

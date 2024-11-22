@@ -1,19 +1,22 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace SchoolAPI.CustomHealthCheck
+namespace CoreServices.CustomHealthCheck
 {
     public class CustomHealthCheck : IHealthCheck
     {
         private readonly HttpClient _httpClient;
+        private readonly string? _healthCheckUrl;
 
-        public CustomHealthCheck(HttpClient httpClient)
+        public CustomHealthCheck(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
+            _healthCheckUrl = configuration["CustomHealthCheckString"];
         }
 
-        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetAsync("http://localhost:5206/Student");
+            var response = await _httpClient.GetAsync(_healthCheckUrl);
 
             if (response.IsSuccessStatusCode)
             {

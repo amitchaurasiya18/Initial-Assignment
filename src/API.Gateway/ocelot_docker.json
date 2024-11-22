@@ -3,7 +3,7 @@
             "DownstreamPathTemplate": "/Student/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [{
-                "Host": "localhost",
+                "Host": "schoolapi",
                 "Port": 5206
             }],
             "UpstreamPathTemplate": "/api/student/{everything}",
@@ -19,7 +19,7 @@
             "DownstreamPathTemplate": "/StudentCQRS/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [{
-                "Host": "localhost",
+                "Host": "schoolapi",
                 "Port": 5206
             }],
             "UpstreamPathTemplate": "/api/studentCQRS/{everything}",
@@ -35,7 +35,7 @@
             "DownstreamPathTemplate": "/HealthCheck",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [{
-                "Host": "localhost",
+                "Host": "schoolapi",
                 "Port": 5206
             }],
             "UpstreamPathTemplate": "/api/student/healthCheck",
@@ -48,7 +48,7 @@
             "DownstreamPathTemplate": "/User/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [{
-                "Host": "localhost",
+                "Host": "userapi",
                 "Port": 5050
             }],
             "UpstreamPathTemplate": "/api/user/{everything}",
@@ -64,7 +64,7 @@
             "DownstreamPathTemplate": "/HealthCheck",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [{
-                "Host": "localhost",
+                "Host": "userapi",
                 "Port": 5050
             }],
             "UpstreamPathTemplate": "/api/user/healthCheck",
@@ -77,7 +77,7 @@
             "DownstreamPathTemplate": "/UserLogin",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [{
-                "Host": "localhost",
+                "Host": "userapi",
                 "Port": 5050
             }],
             "UpstreamPathTemplate": "/api/userlogin",
@@ -92,7 +92,7 @@
             "Config": [{
                 "Name": "School API",
                 "Version": "v1",
-                "Url": "http://localhost:5206/swagger/v1/swagger.json"
+                "Url": "http://schoolapi:5206/swagger/v1/swagger.json"
             }]
         },
         {
@@ -100,7 +100,7 @@
             "Config": [{
                 "Name": "User API",
                 "Version": "v1",
-                "Url": "http://localhost:5050/swagger/v1/swagger.json"
+                "Url": "http://userapi:5050/swagger/v1/swagger.json"
             }]
         }
     ]

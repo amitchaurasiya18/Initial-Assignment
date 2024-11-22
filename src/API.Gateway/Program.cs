@@ -4,7 +4,7 @@ using Ocelot.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 IConfiguration configuration = new ConfigurationBuilder()
-    .AddJsonFile("ocelot.json")
+    .AddJsonFile("ocelot_docker.json")
     .Build();
 
 builder.Services.AddSwaggerForOcelot(configuration);

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace SchoolAPI.Controllers
+namespace UserAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]

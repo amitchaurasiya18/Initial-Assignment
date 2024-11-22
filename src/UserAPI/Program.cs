@@ -1,5 +1,6 @@
 using System.Reflection;
 using CoreServices.CommonAPIConfiguration;
+using CoreServices.CustomHealthCheck;
 using CoreServices.ExceptionHandler;
 using FluentValidation;
 using Serilog;
@@ -13,10 +14,12 @@ using UserAPI.Helper;
 var builder = WebApplication.CreateBuilder(args);
 var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
 
+builder.Services.AddHttpClient();
 builder.Services.AddCommonServices(builder.Configuration,typeof(AutoMapperProfile),xmlPath);
 builder.AddDbContextConfiguration<UserAPIDbContext>("SchoolUserDb");
 builder.AddSerilogLogging();
-
+builder.Services.ConfigureHealthChecks(builder.Configuration,"SchoolUserDb");
+builder.Services.AddHealthChecks().AddCheck<CustomHealthCheck>(nameof(CustomHealthCheck));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();

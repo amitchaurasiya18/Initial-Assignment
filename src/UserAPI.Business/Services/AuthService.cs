@@ -26,8 +26,6 @@ namespace UserAPI.Business.Services
 
         public string Login(User user)
         {
-            // User? user = _context.Users.FirstOrDefault(u => u.Email == loginRequest.Email);
-
             var claims = new List<Claim>
             {
                 new Claim("Username", user.Username ?? "Anonymous"),

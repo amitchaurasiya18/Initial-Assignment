@@ -16,7 +16,7 @@ using SchoolAPI.StaticFiles;
 namespace SchoolAPI.Controllers
 {
     [Route("[controller]")]
-    [Authorize]
+    // [Authorize]
     [ApiController]
     public class StudentController : ControllerBase
     {

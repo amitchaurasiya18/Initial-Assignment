@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using CoreServices.CustomExceptions;
 using CoreServices.StaticFiles;
@@ -19,8 +15,8 @@ using SchoolAPI.StaticFiles;
 namespace SchoolAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class StudentCQRSContoller : ControllerBase
+    [Route("[controller]")]
+    public class StudentCQRSController : ControllerBase
     {
 
         private readonly IStudentRepository _studentRepository;
@@ -28,7 +24,7 @@ namespace SchoolAPI.Controllers
         private readonly IMapper _mapper;
         private readonly IMediator _mediator;
 
-        public StudentCQRSContoller(IStudentRepository studentRepository, IMapper mapper, IStudentService studentService, IMediator mediator)
+        public StudentCQRSController(IStudentRepository studentRepository, IMapper mapper, IStudentService studentService, IMediator mediator)
         {
             _studentRepository = studentRepository;
             _mapper = mapper;
