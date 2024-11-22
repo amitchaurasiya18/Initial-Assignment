@@ -18,7 +18,7 @@ namespace SchoolAPI.Controllers
         public async Task<IActionResult> Get()
         {
             HealthReport report = await _healthCheckService.CheckHealthAsync();
-            return Ok(report);
+            return Ok(report.Status.ToString());
         }
     }
 }
