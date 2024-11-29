@@ -5,6 +5,7 @@ using CoreServices.ExceptionHandler;
 using FluentValidation;
 using Serilog;
 using UserAPI.Business.Data;
+using UserAPI.Business.Models;
 using UserAPI.Business.Repository;
 using UserAPI.Business.Repository.Interfaces;
 using UserAPI.Business.Services;
@@ -15,11 +16,14 @@ var builder = WebApplication.CreateBuilder(args);
 var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
 
 builder.Services.AddHttpClient();
-builder.Services.AddCommonServices(builder.Configuration,typeof(AutoMapperProfile),xmlPath);
-builder.AddDbContextConfiguration<UserAPIDbContext>("SchoolUserDb");
+builder.Services.AddHttpContextAccessor();
 builder.AddSerilogLogging();
-builder.Services.ConfigureHealthChecks(builder.Configuration,"SchoolUserDb");
+builder.Services.AddCommonServices(builder.Configuration,typeof(AutoMapperProfile),xmlPath);
+builder.Services.AddDbContextReadWriteConfiguration<UserAPIDbContext>(builder.Configuration);
+builder.Services.ConfigureHealthChecks(builder.Configuration);
 builder.Services.AddHealthChecks().AddCheck<CustomHealthCheck>(nameof(CustomHealthCheck));
+builder.Services.ConfigureGenericRepository<User, UserAPIDbContext>(builder.Configuration);
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();

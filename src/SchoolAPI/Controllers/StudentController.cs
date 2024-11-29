@@ -1,6 +1,7 @@
 using System.Net;
 using AutoMapper;
 using CoreServices.CustomExceptions;
+using CoreServices.GenericRepository;
 using CoreServices.StaticFiles;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -20,18 +21,20 @@ namespace SchoolAPI.Controllers
     [ApiController]
     public class StudentController : ControllerBase
     {
-       private readonly IStudentRepository _studentRepository;
+        private readonly IStudentRepository _studentRepository;
+        private readonly IRepository<Student> _genericRepository;
         private readonly IStudentService _studentService;
         private readonly IMapper _mapper;
         private const int PAGE = 1;
         private const int PAGE_SIZE = 10;
         private const string SEARCH_TERM = "";
 
-        public StudentController(IStudentRepository studentRepository, IMapper mapper, IStudentService studentService)
+        public StudentController(IStudentRepository studentRepository, IMapper mapper, IStudentService studentService, IRepository<Student> genericRepository)
         {
             _studentRepository = studentRepository;
             _mapper = mapper;
             _studentService = studentService;
+            _genericRepository = genericRepository;
         }
 
         /// <summary>
@@ -45,7 +48,7 @@ namespace SchoolAPI.Controllers
         [ProducesResponseType(200, Type = typeof(IEnumerable<StudentGetDTO>))]
         public async Task<ActionResult<IEnumerable<StudentGetDTO>>> GetAllStudents()
         {
-            var students = await _studentRepository.GetAll();
+            var students = await _genericRepository.GetAll();
             var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(students);
             return Ok(studentDTOs);
         }
@@ -62,7 +65,7 @@ namespace SchoolAPI.Controllers
         [ProducesResponseType(200, Type = typeof(StudentGetDTO))]
         public async Task<ActionResult<StudentGetDTO>> GetById(int id)
         {
-            var student = await _studentRepository.GetById(id);
+            var student = await _genericRepository.GetById(id);
             if (student == null)
             {
                 return NotFound(ErrorMessages.STUDENT_NOT_FOUND);
@@ -127,7 +130,7 @@ namespace SchoolAPI.Controllers
             student.UpdatedAt = DateTime.Now;
             student.Age = _studentService.CalculateAge(student.DateOfBirth);
 
-            var addedStudent = await _studentRepository.Add(student);
+            var addedStudent = await _genericRepository.Add(student);
             var addedStudentDTO = _mapper.Map<StudentGetDTO>(addedStudent);
 
             return Ok(addedStudentDTO);
@@ -148,7 +151,7 @@ namespace SchoolAPI.Controllers
         [Authorize(Roles = $"{AuthorizationRoles.ADMIN}")]
         public async Task<ActionResult<StudentGetDTO>> UpdateStudent(int id, [FromBody] StudentUpdateDTO studentUpdateDTO)
         {
-            var existingStudent = await _studentRepository.GetById(id);
+            var existingStudent = await _genericRepository.GetById(id);
             if (existingStudent == null)
             {
                 return NotFound(ErrorMessages.STUDENT_NOT_FOUND);
@@ -182,7 +185,7 @@ namespace SchoolAPI.Controllers
 
             existingStudent.UpdatedAt = DateTime.Now;
 
-            var updatedStudent = await _studentRepository.Update(existingStudent);
+            var updatedStudent = await _genericRepository.Update(existingStudent);
             var updatedStudentDTO = _mapper.Map<StudentGetDTO>(updatedStudent);
             return Ok(updatedStudentDTO);
         }
@@ -201,12 +204,12 @@ namespace SchoolAPI.Controllers
         [Authorize(Roles = $"{AuthorizationRoles.ADMIN}")]
         public async Task<ActionResult<StudentGetDTO>> DeleteStudent(int id)
         {
-            var student = await _studentRepository.GetById(id);
+            var student = await _genericRepository.GetById(id);
             if (student == null)
             {
                 return NotFound(ErrorMessages.STUDENT_NOT_FOUND);
             }
-            var result = await _studentRepository.Delete(student.Id);
+            var result = await _genericRepository.Delete(student.Id);
             if (!result)
             {
                 return BadRequest(ErrorMessages.INTERNAL_SERVER_ERROR);

@@ -1,12 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Security.Claims;
 using System.Text;
-using CoreServices.DTO;
-using CoreServices.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using UserAPI.Business.Data;
 using UserAPI.Business.Models;
 using UserAPI.Business.Services.Interfaces;
 
@@ -34,12 +30,12 @@ namespace UserAPI.Business.Services
 
             if (user.IsAdmin)
             {
-                claims.Add(new Claim("Role", AuthorizationRoles.ADMIN));
+                claims.Add(new Claim("Role", "Admin"));
             }
 
             if (!user.IsAdmin)
             {
-                claims.Add(new Claim("Role", AuthorizationRoles.TEACHER));
+                claims.Add(new Claim("Role", "Teacher"));
             }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

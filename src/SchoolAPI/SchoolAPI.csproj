@@ -36,7 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SchoolAPI.Business\SchoolAPI.Business.csproj" />
     <ProjectReference Include="..\CoreServices\CoreServices.csproj" />
   </ItemGroup>
 

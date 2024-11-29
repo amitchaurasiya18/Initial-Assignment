@@ -7,19 +7,22 @@ using UserAPI.Business.Models;
 using UserAPI.Business.Repository.Interfaces;
 using UserAPI.DTO;
 using UserAPI.StaticFiles;
+using CoreServices.GenericRepository;
 
 namespace UserAPI.Controllers
 {
-    [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = $"{AuthorizationRoles.ADMIN}")]
+    [ApiController]
+    // [Authorize(Roles = $"{AuthorizationRoles.ADMIN}")]
     public class UserController : ControllerBase
     {
+        private readonly IRepository<User> _genericRepository;
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
-        public UserController(IUserRepository userRepository, IMapper mapper)
+        public UserController(IRepository<User> genericRepository, IUserRepository userRepository, IMapper mapper)
         {
+            _genericRepository = genericRepository;
             _userRepository = userRepository;
             _mapper = mapper;
         }
@@ -35,7 +38,7 @@ namespace UserAPI.Controllers
         [ProducesResponseType(200, Type = typeof(IEnumerable<UserGetDTO>))]
         public async Task<ActionResult<IEnumerable<UserGetDTO>>> GetUsers()
         {
-            var users = await _userRepository.GetAll();
+            var users = await _genericRepository.GetAll();
 
             if (!users.Any())
             {
@@ -58,7 +61,7 @@ namespace UserAPI.Controllers
         [ProducesResponseType(200, Type = typeof(UserGetDTO))]
         public async Task<ActionResult<UserGetDTO>> GetUser(int id)
         {
-            var user = await _userRepository.GetById(id);
+            var user = await _genericRepository.GetById(id);
 
             if (user == null)
             {
@@ -95,7 +98,7 @@ namespace UserAPI.Controllers
             user.CreatedAt = DateTime.Now;
             user.UpdatedAt = DateTime.Now;
 
-            var result = await _userRepository.Add(user);
+            var result = await _genericRepository.Add(user);
             var userDto = _mapper.Map<UserGetDTO>(result);
             return Ok(userDto);
         }
@@ -113,7 +116,7 @@ namespace UserAPI.Controllers
         [ProducesResponseType(200, Type = typeof(UserGetDTO))]
         public async Task<ActionResult<UserGetDTO>> UpdateUser(int id, UserUpdateDTO userUpdateDTO)
         {
-            var existingUser = await _userRepository.GetById(id);
+            var existingUser = await _genericRepository.GetById(id);
             if (existingUser == null)
             {
                 return NotFound(ErrorMessages.USER_NOT_FOUND);
@@ -136,7 +139,7 @@ namespace UserAPI.Controllers
 
             existingUser.UpdatedAt = DateTime.Now;
 
-            var updatedUser = await _userRepository.Update(existingUser);
+            var updatedUser = await _genericRepository.Update(existingUser);
             var updatedUserDTO = _mapper.Map<UserGetDTO>(updatedUser);
             return Ok(updatedUserDTO);
         }
@@ -153,13 +156,13 @@ namespace UserAPI.Controllers
         [ProducesResponseType(200, Type = typeof(UserGetDTO))]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _userRepository.GetById(id);
+            var user = await _genericRepository.GetById(id);
             if (user == null)
             {
                 return NotFound(ErrorMessages.USER_NOT_FOUND);
             }
 
-            var result = await _userRepository.Delete(user.Id);
+            var result = await _genericRepository.Delete(user.Id);
             if (!result)
             {
                 throw new Exception(ErrorMessages.INTERNAL_SERVER_ERROR);

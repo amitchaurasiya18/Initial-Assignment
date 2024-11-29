@@ -22,8 +22,8 @@ namespace SchoolAPI.Business.Repository
 
         public async Task<bool> Delete(int id)
         {
-            Student? student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.isActive ==true && s.Id == id) ?? new Student();
-            student.isActive = false;
+            Student? student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.IsActive ==true && s.Id == id) ?? new Student();
+            student.IsActive = false;
             _schoolAPIDbContext.SaveChanges();
             return true;
         }
@@ -33,7 +33,7 @@ namespace SchoolAPI.Business.Repository
             IQueryable<Student> query = _schoolAPIDbContext.Students.AsQueryable();
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                query = query.Where(s => s.isActive == true);
+                query = query.Where(s => s.IsActive == true);
             }
             else
             {
@@ -43,7 +43,7 @@ namespace SchoolAPI.Business.Repository
                      s.Email.Contains(searchTerm) ||
                      s.Phone.Contains(searchTerm) ||
                      s.Age.ToString().Contains(searchTerm))
-                     && s.isActive == true);
+                     && s.IsActive == true);
             }
 
             var totalCount = await query.CountAsync();
@@ -58,18 +58,18 @@ namespace SchoolAPI.Business.Repository
 
         public async Task<IEnumerable<Student>> GetAll()
         {
-            return await _schoolAPIDbContext.Students.Where(s => s.isActive == true).ToListAsync();
+            return await _schoolAPIDbContext.Students.Where(s => s.IsActive == true).ToListAsync();
         }
 
         public async Task<Student> GetByEmail(string email)
         {
-            Student student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.isActive == true && s.Email == email);
+            Student student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.IsActive == true && s.Email == email);
             return student;
         }
 
         public async Task<Student?> GetById(int id)
         {
-            Student? student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.Id == id && s.isActive == true);
+            Student? student = await _schoolAPIDbContext.Students.FirstOrDefaultAsync(s => s.Id == id && s.IsActive == true);
             return student;
         }
 

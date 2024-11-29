@@ -38,7 +38,7 @@
                 "Host": "schoolapi",
                 "Port": 5206
             }],
-            "UpstreamPathTemplate": "/api/student/healthCheck",
+            "UpstreamPathTemplate": "/student/healthCheck",
             "UpstreamHttpMethod": [
                 "GET"
             ],
@@ -67,7 +67,7 @@
                 "Host": "userapi",
                 "Port": 5050
             }],
-            "UpstreamPathTemplate": "/api/user/healthCheck",
+            "UpstreamPathTemplate": "/user/healthCheck",
             "UpstreamHttpMethod": [
                 "GET"
             ],

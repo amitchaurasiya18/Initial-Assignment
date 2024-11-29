@@ -30,7 +30,7 @@ namespace SchoolAPI.Business.Handlers
                 Age = command.Age,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
-                isActive = true
+                IsActive = true
             };
 
             return _studentRepository.Add(student);

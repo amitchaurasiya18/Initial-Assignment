@@ -3,6 +3,7 @@ using CoreServices.CustomExceptions;
 using CoreServices.DTO;
 using CoreServices.ExceptionHandler;
 using CoreServices.Filters;
+using CoreServices.GenericRepository;
 using CoreServices.StaticFiles;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -173,20 +174,38 @@ namespace CoreServices.CommonAPIConfiguration
                 options.UseMySql(builder.Configuration.GetConnectionString(connectionString), serverVersion));
         }
 
-        public static void ConfigureHealthChecks(this IServiceCollection services, IConfiguration configuration, string connectionString)
+        public static void AddDbContextReadWriteConfiguration<T>(this IServiceCollection services, IConfiguration configuration) where T : DbContext
+        {
+            string connectionString;
+            services.AddDbContext<T>((serviceProvider, options) =>
+            {
+                var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                if (httpContextAccessor.HttpContext?.Request.Method == HttpMethods.Get)
+                {
+                    connectionString = configuration.GetConnectionString("SlaveDB");
+                }
+                else
+                {
+                    connectionString = configuration.GetConnectionString("MasterDB");
+                }
+                var serverVersion = ServerVersion.AutoDetect(connectionString);
+                options.UseMySql(connectionString, serverVersion)
+                       .EnableDetailedErrors()
+                       .EnableSensitiveDataLogging();
+            });
+        }
+
+        public static void ConfigureHealthChecks(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHealthChecks()
-            .AddMySql(configuration.GetConnectionString(connectionString));
-                
+            .AddMySql(configuration.GetConnectionString("MasterDB"));
+        }
 
-            // services.AddHealthChecksUI(opt =>
-            // {
-            //     opt.SetEvaluationTimeInSeconds(10);
-            //     opt.MaximumHistoryEntriesPerEndpoint(60);   
-            //     opt.SetApiMaxActiveRequests(1);   
-            //     opt.AddHealthCheckEndpoint("feedback api", "http://schoolapi:5206/api/health");
-
-            // }).AddInMemoryStorage();
+        public static void ConfigureGenericRepository<T, TContext>(this IServiceCollection services, IConfiguration configuration) 
+        where T : class
+        where TContext : DbContext 
+        {
+            services.AddScoped(typeof(IRepository<T>), typeof(Repository<T,TContext>));
         }
     }
 }
