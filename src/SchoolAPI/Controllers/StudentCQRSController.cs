@@ -84,27 +84,20 @@ namespace SchoolAPI.Controllers
         public async Task<ActionResult<StudentGetDTO>> AddStudent([FromBody] StudentPostDTO studentPostDTO)
         {
             var student = _mapper.Map<Student>(studentPostDTO);
-
             var alreadyRegisteredStudent = await _studentRepository.GetByEmail(student.Email);
-
+            
             if (alreadyRegisteredStudent != null)
             {
-                throw new EmailAlreadyRegistered(student.Email + ErrorMessages.EMAIL_ALREADY_REGISTERED);
+                throw new EmailAlreadyRegistered($"{student.Email} {ErrorMessages.EMAIL_ALREADY_REGISTERED}");
             }
-            student.Age = _studentService.CalculateAge(student.DateOfBirth);
 
-            var addedStudent = await _mediator.Send(new AddStudentCommand(
-                student.FirstName,
-                student.LastName,
-                student.Email,
-                student.Phone,
-                student.DateOfBirth,
-                student.Age
-            ));
+            student.Age = _studentService.CalculateAge((DateTime)student.DateOfBirth);
+            var addedStudent = await _mediator.Send(new AddStudentCommand(student));
             var addedStudentDTO = _mapper.Map<StudentGetDTO>(addedStudent);
 
             return Ok(addedStudentDTO);
         }
+
 
         /// <summary>
         /// Updates an existing student's information.
@@ -126,7 +119,6 @@ namespace SchoolAPI.Controllers
             {
                 return NotFound(ErrorMessages.STUDENT_NOT_FOUND);
             }
-
             if (!string.IsNullOrEmpty(studentUpdateDTO.FirstName))
             {
                 existingStudent.FirstName = studentUpdateDTO.FirstName;
@@ -147,22 +139,14 @@ namespace SchoolAPI.Controllers
                 existingStudent.Phone = studentUpdateDTO.Phone;
             }
 
-            if (studentUpdateDTO.DateOfBirth != null)
+            if (studentUpdateDTO.DateOfBirth.HasValue)
             {
-                existingStudent.DateOfBirth = (DateTime)studentUpdateDTO.DateOfBirth;
-                existingStudent.Age = _studentService.CalculateAge((DateTime)studentUpdateDTO.DateOfBirth);
+                existingStudent.DateOfBirth = studentUpdateDTO.DateOfBirth.Value;
+                existingStudent.Age = _studentService.CalculateAge(studentUpdateDTO.DateOfBirth.Value);
             }
 
             existingStudent.UpdatedAt = DateTime.Now;
-            var dateOfBirth = studentUpdateDTO.DateOfBirth ?? existingStudent.DateOfBirth;
-            var updatedStudent = await _mediator.Send(new UpdateStudentCommand(
-                id,
-                studentUpdateDTO.FirstName ?? existingStudent.FirstName,
-                studentUpdateDTO.LastName ?? existingStudent.LastName,
-                studentUpdateDTO.Email ?? existingStudent.Email,
-                studentUpdateDTO.Phone ?? existingStudent.Phone,
-                dateOfBirth
-            ));
+            var updatedStudent = await _mediator.Send(new UpdateStudentCommand(existingStudent));
             var updatedStudentDTO = _mapper.Map<StudentGetDTO>(updatedStudent);
             return Ok(updatedStudentDTO);
         }

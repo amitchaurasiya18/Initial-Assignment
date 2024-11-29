@@ -1,14 +1,10 @@
-using System.Net;
 using AutoMapper;
 using CoreServices.CustomExceptions;
 using CoreServices.GenericRepository;
 using CoreServices.StaticFiles;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SchoolAPI.Business.Commands;
 using SchoolAPI.Business.Models;
-using SchoolAPI.Business.Queries;
 using SchoolAPI.Business.Repository.Interfaces;
 using SchoolAPI.Business.Services.Interfaces;
 using SchoolAPI.DTO;
@@ -128,7 +124,7 @@ namespace SchoolAPI.Controllers
 
             student.CreatedAt = DateTime.Now;
             student.UpdatedAt = DateTime.Now;
-            student.Age = _studentService.CalculateAge(student.DateOfBirth);
+            student.Age = _studentService.CalculateAge((DateTime)student.DateOfBirth);
 
             var addedStudent = await _genericRepository.Add(student);
             var addedStudentDTO = _mapper.Map<StudentGetDTO>(addedStudent);

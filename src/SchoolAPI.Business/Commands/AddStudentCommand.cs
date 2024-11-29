@@ -10,21 +10,11 @@ namespace SchoolAPI.Business.Commands
 {
     public class AddStudentCommand : IRequest<Student>
     {
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public DateTime DateOfBirth { get; set; }
-        public int Age { get; set; }
+        public Student Student { get; set; }
 
-        public AddStudentCommand(string FirstName, string LastName, string Email, string Phone, DateTime DateOfBirth, int Age)
+        public AddStudentCommand(Student student)
         {
-            this.FirstName = FirstName;
-            this.LastName = LastName;
-            this.Email = Email;
-            this.Phone = Phone;
-            this.DateOfBirth = DateOfBirth;
-            this.Age = Age;
+            this.Student = student;
         }
     }
 }

@@ -1,6 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using SchoolAPI.Business.Commands;
@@ -20,16 +19,16 @@ namespace SchoolAPI.Business.Handlers
 
         public async Task<Student> Handle(UpdateStudentCommand command, CancellationToken cancellationToken)
         {
+            var existingStudent = await _studentRepository.GetById(command.Student.Id);
 
-            var student = await _studentRepository.GetById(command.Id);
+            existingStudent.FirstName = command.Student.FirstName ?? existingStudent.FirstName;
+            existingStudent.LastName = command.Student.LastName ?? existingStudent.LastName;
+            existingStudent.Email = command.Student.Email ?? existingStudent.Email;
+            existingStudent.Phone = command.Student.Phone ?? existingStudent.Phone;
+            existingStudent.DateOfBirth = command.Student.DateOfBirth ?? existingStudent.DateOfBirth;
+            existingStudent.UpdatedAt = DateTime.Now;
 
-            student.FirstName = command.FirstName;
-            student.LastName = command.LastName;
-            student.Email = command.Email;
-            student.Phone = command.Phone;
-            student.DateOfBirth = (DateTime)command.DateOfBirth;
-
-            return await _studentRepository.Update(student);
+            return await _studentRepository.Update(existingStudent);
         }
     }
 }

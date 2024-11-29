@@ -18,22 +18,13 @@ namespace SchoolAPI.Business.Handlers
             _studentRepository = studentRepository;
         }
 
-        public Task<Student> Handle(AddStudentCommand command, CancellationToken cancellationToken)
+        public async Task<Student> Handle(AddStudentCommand command, CancellationToken cancellationToken)
         {
-            var student = new Student()
-            {
-                FirstName = command.FirstName,
-                LastName = command.LastName,
-                Email = command.Email,
-                Phone = command.Phone,
-                DateOfBirth = command.DateOfBirth,
-                Age = command.Age,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-                IsActive = true
-            };
+            command.Student.CreatedAt = DateTime.Now;
+            command.Student.UpdatedAt = DateTime.Now;
+            command.Student.IsActive = true;
 
-            return _studentRepository.Add(student);
+            return await _studentRepository.Add(command.Student);
         }
     }
 }
