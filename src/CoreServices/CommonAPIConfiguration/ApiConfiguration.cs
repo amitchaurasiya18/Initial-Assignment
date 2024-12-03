@@ -16,6 +16,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using SchoolAPI.Business.Services;
+using SchoolAPI.Business.Services.Interfaces;
 using Serilog;
 using Serilog.Filters;
 
@@ -206,6 +208,11 @@ namespace CoreServices.CommonAPIConfiguration
         where TContext : DbContext 
         {
             services.AddScoped(typeof(IRepository<T>), typeof(Repository<T,TContext>));
+        }
+
+        public static void AddEmailService(this IServiceCollection services)
+        {
+            services.AddSingleton<IEmailService, EmailService>();
         }
     }
 }

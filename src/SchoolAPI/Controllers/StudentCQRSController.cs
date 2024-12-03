@@ -45,6 +45,10 @@ namespace SchoolAPI.Controllers
         {
             var students = await _mediator.Send(new GetAllStudentQuery());
             var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(students);
+            foreach(var student in studentDTOs)
+            {
+                student.Age = _studentService.CalculateAge(student.DateOfBirth);
+            }
             return Ok(studentDTOs);
         }
 
@@ -66,6 +70,7 @@ namespace SchoolAPI.Controllers
                 return NotFound(ErrorMessages.STUDENT_NOT_FOUND);
             }
             var studentDTO = _mapper.Map<StudentGetDTO>(student);
+            studentDTO.Age = _studentService.CalculateAge(studentDTO.DateOfBirth);
             return Ok(studentDTO);
         }
 
@@ -91,9 +96,9 @@ namespace SchoolAPI.Controllers
                 throw new EmailAlreadyRegistered($"{student.Email} {ErrorMessages.EMAIL_ALREADY_REGISTERED}");
             }
 
-            student.Age = _studentService.CalculateAge((DateTime)student.DateOfBirth);
             var addedStudent = await _mediator.Send(new AddStudentCommand(student));
             var addedStudentDTO = _mapper.Map<StudentGetDTO>(addedStudent);
+            addedStudentDTO.Age = _studentService.CalculateAge((DateTime)addedStudentDTO.DateOfBirth);
 
             return Ok(addedStudentDTO);
         }
@@ -142,12 +147,12 @@ namespace SchoolAPI.Controllers
             if (studentUpdateDTO.DateOfBirth.HasValue)
             {
                 existingStudent.DateOfBirth = studentUpdateDTO.DateOfBirth.Value;
-                existingStudent.Age = _studentService.CalculateAge(studentUpdateDTO.DateOfBirth.Value);
             }
 
             existingStudent.UpdatedAt = DateTime.Now;
             var updatedStudent = await _mediator.Send(new UpdateStudentCommand(existingStudent));
             var updatedStudentDTO = _mapper.Map<StudentGetDTO>(updatedStudent);
+            updatedStudentDTO.Age = _studentService.CalculateAge(updatedStudentDTO.DateOfBirth);
             return Ok(updatedStudentDTO);
         }
 

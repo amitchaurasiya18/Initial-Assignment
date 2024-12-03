@@ -16,6 +16,9 @@ using SchoolAPI.Business.Handlers;
 using CoreServices.CustomHealthCheck;
 using CoreServices.GenericRepository;
 using SchoolAPI.Business.Models;
+using Plain.RabbitMQ;
+using RabbitMQ.Client;
+using SchoolAPI.Listener;
 
 var builder = WebApplication.CreateBuilder(args);
 var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
@@ -25,6 +28,23 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddCommonServices(builder.Configuration,typeof(AutoMapperProfiles),xmlPath);
 builder.Services.AddDbContextReadWriteConfiguration<SchoolAPIDbContext>(builder.Configuration);
 builder.AddSerilogLogging();
+
+builder.Services.AddEmailService();
+builder.Services.AddSingleton<IConnectionProvider>(new ConnectionProvider("amqp://guest:guest@host.docker.internal:5672"));
+builder.Services.AddSingleton<Plain.RabbitMQ.IPublisher>( p => new Publisher(
+    p.GetRequiredService<IConnectionProvider>(),
+    "school.email",
+    ExchangeType.Topic
+));
+builder.Services.AddSingleton<ISubscriber>(s => new Subscriber(
+    s.GetService<IConnectionProvider>(),
+    "school.email",  // The exchange to subscribe to
+    "student.event.queue",   // The queue name
+    "student.*",   // The routing key to listen to
+    ExchangeType.Topic 
+));
+builder.Services.AddHostedService<StudentEventEmailListener>();
+
 builder.Services.ConfigureHealthChecks(builder.Configuration);
 builder.Services.AddHealthChecks().AddCheck<CustomHealthCheck>(nameof(CustomHealthCheck));
 builder.Services.AddMediatR(typeof(GetAllStudentHandler).Assembly);

@@ -11,7 +11,7 @@ using SchoolAPI.Business.Data;
 namespace SchoolAPI.Business.Migrations
 {
     [DbContext(typeof(SchoolAPIDbContext))]
-    [Migration("20241107054908_schoolAPIv1")]
+    [Migration("20241203131236_schoolAPIv1")]
     partial class schoolAPIv1
     {
         /// <inheritdoc />
@@ -28,13 +28,10 @@ namespace SchoolAPI.Business.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("Age")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime>("DateOfBirth")
+                    b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
@@ -44,6 +41,9 @@ namespace SchoolAPI.Business.Migrations
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -55,9 +55,6 @@ namespace SchoolAPI.Business.Migrations
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("isActive")
-                        .HasColumnType("tinyint(1)");
 
                     b.HasKey("Id");
 

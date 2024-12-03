@@ -41,8 +41,7 @@ namespace SchoolAPI.Business.Repository
                     (s.FirstName.Contains(searchTerm) ||
                      s.LastName.Contains(searchTerm) ||
                      s.Email.Contains(searchTerm) ||
-                     s.Phone.Contains(searchTerm) ||
-                     s.Age.ToString().Contains(searchTerm))
+                     s.Phone.Contains(searchTerm))
                      && s.IsActive == true);
             }
 

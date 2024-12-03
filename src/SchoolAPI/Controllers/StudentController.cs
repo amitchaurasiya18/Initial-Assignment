@@ -4,6 +4,8 @@ using CoreServices.GenericRepository;
 using CoreServices.StaticFiles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Plain.RabbitMQ;
 using SchoolAPI.Business.Models;
 using SchoolAPI.Business.Repository.Interfaces;
 using SchoolAPI.Business.Services.Interfaces;
@@ -20,17 +22,19 @@ namespace SchoolAPI.Controllers
         private readonly IStudentRepository _studentRepository;
         private readonly IRepository<Student> _genericRepository;
         private readonly IStudentService _studentService;
+        private readonly IPublisher _publisher;
         private readonly IMapper _mapper;
         private const int PAGE = 1;
         private const int PAGE_SIZE = 10;
         private const string SEARCH_TERM = "";
 
-        public StudentController(IStudentRepository studentRepository, IMapper mapper, IStudentService studentService, IRepository<Student> genericRepository)
+        public StudentController(IStudentRepository studentRepository, IMapper mapper, IStudentService studentService, IRepository<Student> genericRepository, IPublisher publisher)
         {
             _studentRepository = studentRepository;
             _mapper = mapper;
             _studentService = studentService;
             _genericRepository = genericRepository;
+            _publisher = publisher;
         }
 
         /// <summary>
@@ -46,6 +50,10 @@ namespace SchoolAPI.Controllers
         {
             var students = await _genericRepository.GetAll();
             var studentDTOs = _mapper.Map<IEnumerable<StudentGetDTO>>(students);
+            foreach(var student in studentDTOs)
+            {
+                student.Age = _studentService.CalculateAge(student.DateOfBirth);
+            }
             return Ok(studentDTOs);
         }
 
@@ -67,6 +75,7 @@ namespace SchoolAPI.Controllers
                 return NotFound(ErrorMessages.STUDENT_NOT_FOUND);
             }
             var studentDTO = _mapper.Map<StudentGetDTO>(student);
+            studentDTO.Age = _studentService.CalculateAge(studentDTO.DateOfBirth);
             return Ok(studentDTO);
         }
 
@@ -124,10 +133,22 @@ namespace SchoolAPI.Controllers
 
             student.CreatedAt = DateTime.Now;
             student.UpdatedAt = DateTime.Now;
-            student.Age = _studentService.CalculateAge((DateTime)student.DateOfBirth);
 
             var addedStudent = await _genericRepository.Add(student);
             var addedStudentDTO = _mapper.Map<StudentGetDTO>(addedStudent);
+            addedStudentDTO.Age = _studentService.CalculateAge((DateTime)student.DateOfBirth);
+
+
+            var studentCreatedMessage = new StudentEventMessage
+            {
+                EventType = "created",
+                StudentId = addedStudent.Id,
+                StudentName = addedStudent.FirstName + " " + addedStudent.LastName,
+                StudentEmail = addedStudent.Email
+            };
+
+            var message = JsonConvert.SerializeObject(studentCreatedMessage);
+            _publisher.Publish(message, "student.created", null);
 
             return Ok(addedStudentDTO);
         }
@@ -176,13 +197,13 @@ namespace SchoolAPI.Controllers
             if (studentUpdateDTO.DateOfBirth != null)
             {
                 existingStudent.DateOfBirth = (DateTime)studentUpdateDTO.DateOfBirth;
-                existingStudent.Age = _studentService.CalculateAge((DateTime)studentUpdateDTO.DateOfBirth);
             }
 
             existingStudent.UpdatedAt = DateTime.Now;
 
             var updatedStudent = await _genericRepository.Update(existingStudent);
             var updatedStudentDTO = _mapper.Map<StudentGetDTO>(updatedStudent);
+            updatedStudentDTO.Age = _studentService.CalculateAge((DateTime)studentUpdateDTO.DateOfBirth);
             return Ok(updatedStudentDTO);
         }
 
