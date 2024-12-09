@@ -9,7 +9,8 @@ namespace CoreServices.CustomExceptions
     public class EmailAlreadyRegistered : Exception, ICustomException
     {
         public int StatusCode { get; set; }
-        public EmailAlreadyRegistered(string message) : base(message){
+        public EmailAlreadyRegistered(string message) : base(message)
+        {
             StatusCode = StatusCodes.Status409Conflict;
         }
     }

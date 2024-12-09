@@ -14,11 +14,17 @@ namespace UserAPI.Controllers
             _healthCheckService = healthCheckService;
         }
 
+        [HttpGet("Report")]
+        public async Task<IActionResult> GetHealthCheckReport()
+        {
+            HealthReport report = await _healthCheckService.CheckHealthAsync();
+            return Ok(report);
+        }
+
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            HealthReport report = await _healthCheckService.CheckHealthAsync();
-            return Ok(report.Status.ToString());
+            return Ok();
         }
     }
 }

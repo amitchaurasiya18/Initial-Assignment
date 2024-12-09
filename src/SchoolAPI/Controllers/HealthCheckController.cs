@@ -14,11 +14,17 @@ namespace SchoolAPI.Controllers
             _healthCheckService = healthCheckService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Get()
+        [HttpGet("Report")]
+        public async Task<IActionResult> GetHealthCheckReport()
         {
             HealthReport report = await _healthCheckService.CheckHealthAsync();
             return Ok(report);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            return Ok();
         }
     }
 }

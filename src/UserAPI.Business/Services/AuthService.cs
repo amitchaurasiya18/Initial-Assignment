@@ -10,13 +10,12 @@ namespace UserAPI.Business.Services
 {
     public class AuthService : IAuthService
     {
-        // private readonly UserAPIDbContext _context;
-
         private readonly IConfiguration _configuration;
+        private const string ADMIN = "Admin";
+        private const string TEACHER = "Teacher";
 
         public AuthService(IConfiguration configuration)
         {
-            // _context = context;
             _configuration = configuration;
         }
 
@@ -30,12 +29,12 @@ namespace UserAPI.Business.Services
 
             if (user.IsAdmin)
             {
-                claims.Add(new Claim("Role", "Admin"));
+                claims.Add(new Claim("Role", ADMIN));
             }
 
             if (!user.IsAdmin)
             {
-                claims.Add(new Claim("Role", "Teacher"));
+                claims.Add(new Claim("Role", TEACHER));
             }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

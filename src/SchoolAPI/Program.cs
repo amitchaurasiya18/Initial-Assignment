@@ -19,6 +19,8 @@ using SchoolAPI.Business.Models;
 using Plain.RabbitMQ;
 using RabbitMQ.Client;
 using SchoolAPI.Listener;
+using SchoolAPI.Handlers;
+using CoreServices.GenericRepository.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
@@ -26,11 +28,16 @@ var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAss
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCommonServices(builder.Configuration,typeof(AutoMapperProfiles),xmlPath);
-builder.Services.AddDbContextReadWriteConfiguration<SchoolAPIDbContext>(builder.Configuration);
+builder.Services.AddDbContextConfiguration<SchoolAPIDbContext>(builder.Configuration);
+// builder.Services.AddDbContextReadWriteConfiguration<SchoolAPIDbContext>(builder.Configuration);
+
+builder.Services.AddDbContextReadConfiguration<SchoolAPIReadDbContext>(builder.Configuration);
+builder.Services.AddDbContextWriteConfiguration<SchoolAPIWriteDbContext>(builder.Configuration);
+
 builder.AddSerilogLogging();
 
 builder.Services.AddEmailService();
-builder.Services.AddSingleton<IConnectionProvider>(new ConnectionProvider("amqp://guest:guest@host.docker.internal:5672"));
+builder.Services.AddSingleton<IConnectionProvider>(new ConnectionProvider("amqp://guest:guest@localhost:5672"));
 builder.Services.AddSingleton<Plain.RabbitMQ.IPublisher>( p => new Publisher(
     p.GetRequiredService<IConnectionProvider>(),
     "school.email",
@@ -38,9 +45,9 @@ builder.Services.AddSingleton<Plain.RabbitMQ.IPublisher>( p => new Publisher(
 ));
 builder.Services.AddSingleton<ISubscriber>(s => new Subscriber(
     s.GetService<IConnectionProvider>(),
-    "school.email",  // The exchange to subscribe to
-    "student.event.queue",   // The queue name
-    "student.*",   // The routing key to listen to
+    "school.email",
+    "student.event.queue",
+    "student.*",
     ExchangeType.Topic 
 ));
 builder.Services.AddHostedService<StudentEventEmailListener>();
@@ -48,7 +55,14 @@ builder.Services.AddHostedService<StudentEventEmailListener>();
 builder.Services.ConfigureHealthChecks(builder.Configuration);
 builder.Services.AddHealthChecks().AddCheck<CustomHealthCheck>(nameof(CustomHealthCheck));
 builder.Services.AddMediatR(typeof(GetAllStudentHandler).Assembly);
-builder.Services.ConfigureGenericRepository<Student, SchoolAPIDbContext>(builder.Configuration);
+
+// builder.Services.ConfigureGenericRepository<Student,SchoolAPIDbContext>(builder.Configuration);
+builder.Services.ConfigureGenericReadRepository<Student,SchoolAPIReadDbContext>(builder.Configuration);
+builder.Services.ConfigureGenericWriteRepository<Student,SchoolAPIWriteDbContext>(builder.Configuration);
+// builder.Services.AddScoped<IRepository<Student>, Repository<Student, SchoolAPIDbContext>>();
+// builder.Services.AddScoped<IReadRepository<Student>, ReadRepository<Student, SchoolAPIReadDbContext>>();
+// builder.Services.AddScoped<IWriteRepository<Student>, WriteRepository<Student,SchoolAPIWriteDbContext>>();
+
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();

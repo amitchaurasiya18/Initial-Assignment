@@ -1,5 +1,5 @@
+using CoreServices.GenericRepository.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using SchoolAPI.Business.Data;
 
 namespace CoreServices.GenericRepository
 {

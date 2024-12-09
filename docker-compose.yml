@@ -11,6 +11,14 @@ services:
       - gateway_network
     volumes:
       - ./logs:/app/logs
+    environment:
+      DB_HOST: mysql-master-school
+      MySQLDB_USER: root
+      DB_PASSWORD: admin#123
+      DB_NAME: school
+    depends_on:
+      - mysql-master-school
+    
 
   userapi:
     build:
@@ -22,6 +30,13 @@ services:
       - gateway_network
     volumes:
       - ./logs:/app/logs
+    environment:
+      DB_HOST: mysql-master-school
+      MySQLDB_USER: root
+      DB_PASSWORD: admin#123
+      DB_NAME: schooluserdb
+    depends_on:
+      - mysql-master-school
 
   apigateway:
     build:
@@ -36,9 +51,24 @@ services:
       - userapi
     volumes:
       - ./logs:/app/logs
-  
+
+  mysql-master-school:
+    image: mysql:8.0
+    restart: always
+    volumes:
+      - datafiles:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: admin#123
+    ports:
+      - 3305:3306
+    networks:
+      - gateway_network
+
+
 networks:
   gateway_network:
     driver: bridge
 
+volumes:
+  datafiles:
 

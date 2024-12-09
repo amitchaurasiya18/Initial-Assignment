@@ -4,6 +4,7 @@ using CoreServices.DTO;
 using CoreServices.ExceptionHandler;
 using CoreServices.Filters;
 using CoreServices.GenericRepository;
+using CoreServices.GenericRepository.Interfaces;
 using CoreServices.StaticFiles;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -169,16 +170,33 @@ namespace CoreServices.CommonAPIConfiguration
             });
         }
 
-        public static void AddDbContextConfiguration<TContext>(this WebApplicationBuilder builder, string connectionString) where TContext : DbContext
+        public static void AddDbContextConfiguration<TContext>(this IServiceCollection services, IConfiguration configuration) where TContext : DbContext
         {
-            var serverVersion = ServerVersion.AutoDetect(builder.Configuration.GetConnectionString(connectionString));
-            builder.Services.AddDbContext<TContext>(options =>
-                options.UseMySql(builder.Configuration.GetConnectionString(connectionString), serverVersion));
+            var connectionString = "MasterDB";
+            var serverVersion = ServerVersion.AutoDetect(configuration.GetConnectionString(connectionString));
+            services.AddDbContext<TContext>(options =>
+                options.UseMySql(configuration.GetConnectionString(connectionString), serverVersion));
+        }
+
+        public static void AddDbContextReadConfiguration<TContext>(this IServiceCollection services, IConfiguration configuration) where TContext : DbContext
+        {
+            var connectionString = "SlaveDB";
+            var serverVersion = ServerVersion.AutoDetect(configuration.GetConnectionString(connectionString));
+            services.AddDbContext<TContext>(options =>
+                options.UseMySql(configuration.GetConnectionString(connectionString), serverVersion));
+        }
+
+        public static void AddDbContextWriteConfiguration<TContext>(this IServiceCollection services, IConfiguration configuration) where TContext : DbContext
+        {
+            var connectionString = "MasterDB";
+            var serverVersion = ServerVersion.AutoDetect(configuration.GetConnectionString(connectionString));
+            services.AddDbContext<TContext>(options =>
+                options.UseMySql(configuration.GetConnectionString(connectionString), serverVersion));
         }
 
         public static void AddDbContextReadWriteConfiguration<T>(this IServiceCollection services, IConfiguration configuration) where T : DbContext
         {
-            string connectionString;
+            string? connectionString;
             services.AddDbContext<T>((serviceProvider, options) =>
             {
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
@@ -197,17 +215,54 @@ namespace CoreServices.CommonAPIConfiguration
             });
         }
 
+        public static void AddDockerDbContextReadWriteConfiguration<T>(this IServiceCollection services, IConfiguration configuration) where T : DbContext
+        {
+            string? connectionString;
+            var masterConnectionString = Environment.GetEnvironmentVariable("MYSQL_MASTER_CONNECTION_STRING");
+            var slaveConnectionString = Environment.GetEnvironmentVariable("MYSQL_SLAVE_CONNECTION_STRING");
+            services.AddDbContext<T>((serviceProvider, options) =>
+            {
+                var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                if (httpContextAccessor.HttpContext?.Request.Method == HttpMethods.Get)
+                {
+                    connectionString = slaveConnectionString;
+                }
+                else
+                {
+                    connectionString = slaveConnectionString;
+                }
+                var serverVersion = ServerVersion.AutoDetect(connectionString);
+                options.UseMySql(connectionString, serverVersion)
+                       .EnableDetailedErrors()
+                       .EnableSensitiveDataLogging();
+            });
+        }
+
         public static void ConfigureHealthChecks(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHealthChecks()
-            .AddMySql(configuration.GetConnectionString("MasterDB"));
+            .AddMySql(configuration.GetConnectionString("SlaveDB"));
         }
 
-        public static void ConfigureGenericRepository<T, TContext>(this IServiceCollection services, IConfiguration configuration) 
+        // public static void ConfigureGenericRepository<T, TContext>(this IServiceCollection services, IConfiguration configuration) 
+        // where T : class
+        // where TContext : DbContext 
+        // {
+        //     services.AddScoped(typeof(IRepository<T>), typeof(Repository<T,TContext>));
+        // }
+        
+        public static void ConfigureGenericReadRepository<T, TContext>(this IServiceCollection services, IConfiguration configuration) 
         where T : class
         where TContext : DbContext 
         {
-            services.AddScoped(typeof(IRepository<T>), typeof(Repository<T,TContext>));
+            services.AddScoped(typeof(IReadRepository<T>), typeof(ReadRepository<T,TContext>));
+        }
+
+        public static void ConfigureGenericWriteRepository<T, TContext>(this IServiceCollection services, IConfiguration configuration) 
+        where T : class
+        where TContext : DbContext 
+        {
+            services.AddScoped(typeof(IWriteRepository<T>), typeof(WriteRepository<T,TContext>));
         }
 
         public static void AddEmailService(this IServiceCollection services)

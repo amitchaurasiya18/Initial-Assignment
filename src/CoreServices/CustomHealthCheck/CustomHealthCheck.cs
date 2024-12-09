@@ -11,7 +11,7 @@ namespace CoreServices.CustomHealthCheck
         public CustomHealthCheck(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _healthCheckUrl = configuration["CustomHealthCheckString"];
+            _healthCheckUrl = configuration["HealthCheckUrl"];
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)

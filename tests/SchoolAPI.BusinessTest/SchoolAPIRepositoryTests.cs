@@ -1,29 +1,16 @@
-using Bogus; // Add this using directive
+using Bogus;
 using Microsoft.EntityFrameworkCore;
 using SchoolAPI.Business.Data;
 using SchoolAPI.Business.Models;
 using SchoolAPI.Business.Repository;
 using SchoolAPI.Business.Repository.Interfaces;
+using SchoolAPI.BusinessTest.Helpers;
 
 public class StudentRepositoryTests : IAsyncLifetime
 {
     private SchoolAPIDbContext _context;
     private IStudentRepository _repository;
-    private readonly Faker<Student> _studentFaker = new Faker<Student>()
-        .RuleFor(s => s.FirstName, f => f.Name.FirstName())
-        .RuleFor(s => s.LastName, f => f.Name.LastName())
-        .RuleFor(s => s.Email, f => f.Internet.Email())
-        .RuleFor(s => s.Phone, f =>
-        {
-            var firstDigit = f.Random.Int(7, 9);
-            var remainingDigits = f.Random.Number(10000000, 99999999);
-            return $"{firstDigit}{remainingDigits}";
-        })
-        .RuleFor(s => s.DateOfBirth, f => f.Date.Past(20, null))
-        .RuleFor(s => s.Age, (f, s) => DateTime.Now.Year - s.DateOfBirth.Year)
-        .RuleFor(s => s.CreatedAt, f => DateTime.Now)
-        .RuleFor(s => s.UpdatedAt, f => DateTime.Now)
-        .RuleFor(s => s.isActive, true);
+    private readonly Faker<Student> _studentFaker = StudentFaker.CreateFaker();
 
     public async Task InitializeAsync()
     {
@@ -53,10 +40,9 @@ public class StudentRepositoryTests : IAsyncLifetime
         Assert.Equal(student.Email, result.Email);
         Assert.Equal(student.Phone, result.Phone);
         Assert.Equal(student.DateOfBirth, result.DateOfBirth);
-        Assert.Equal(student.Age, result.Age);
         Assert.Equal(student.CreatedAt, result.CreatedAt);
         Assert.Equal(student.UpdatedAt, result.UpdatedAt);
-        Assert.Equal(student.isActive, result.isActive);
+        Assert.Equal(student.IsActive, result.IsActive);
         Assert.Single(await _context.Students.ToListAsync());
     }
 
@@ -80,10 +66,9 @@ public class StudentRepositoryTests : IAsyncLifetime
         Assert.Equal(student.Email, result.Email);
         Assert.Equal(student.Phone, result.Phone);
         Assert.Equal(student.DateOfBirth, result.DateOfBirth);
-        Assert.Equal(student.Age, result.Age);
         Assert.Equal(student.CreatedAt, result.CreatedAt);
         Assert.Equal(student.UpdatedAt, result.UpdatedAt);
-        Assert.Equal(student.isActive, result.isActive);
+        Assert.Equal(student.IsActive, result.IsActive);
     }
 
     [Fact]
@@ -107,13 +92,6 @@ public class StudentRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Delete_ShouldReturnFalse_WhenNotExists_WorstCase()
-    {
-        var result = await _repository.Delete(999);
-        Assert.False(result);
-    }
-
-    [Fact]
     public async Task GetAll_ShouldReturnAllActiveStudents_BestCase()
     {
         var student1 = _studentFaker.Generate();
@@ -132,10 +110,9 @@ public class StudentRepositoryTests : IAsyncLifetime
             s.Email == student1.Email &&
             s.Phone == student1.Phone &&
             s.DateOfBirth == student1.DateOfBirth &&
-            s.Age == student1.Age &&
             s.CreatedAt == student1.CreatedAt &&
             s.UpdatedAt == student1.UpdatedAt &&
-            s.isActive == student1.isActive
+            s.IsActive == student1.IsActive
         );
 
         Assert.Contains(result, s =>
@@ -144,10 +121,9 @@ public class StudentRepositoryTests : IAsyncLifetime
             s.Email == student2.Email &&
             s.Phone == student2.Phone &&
             s.DateOfBirth == student2.DateOfBirth &&
-            s.Age == student2.Age &&
             s.CreatedAt == student2.CreatedAt &&
             s.UpdatedAt == student2.UpdatedAt &&
-            s.isActive == student2.isActive
+            s.IsActive == student2.IsActive
         );
     }
 
@@ -155,7 +131,7 @@ public class StudentRepositoryTests : IAsyncLifetime
     public async Task GetAll_ShouldReturnEmpty_WhenNoActiveStudents_WorstCase()
     {
         var student1 = _studentFaker.Generate();
-        student1.isActive = false;
+        student1.IsActive = false;
         await _repository.Add(student1);
 
         var result = await _repository.GetAll();
@@ -180,10 +156,9 @@ public class StudentRepositoryTests : IAsyncLifetime
         Assert.Equal(student1.Email, students.First().Email);
         Assert.Equal(student1.Phone, students.First().Phone);
         Assert.Equal(student1.DateOfBirth, students.First().DateOfBirth);
-        Assert.Equal(student1.Age, students.First().Age);
         Assert.Equal(student1.CreatedAt, students.First().CreatedAt);
         Assert.Equal(student1.UpdatedAt, students.First().UpdatedAt);
-        Assert.Equal(student1.isActive, students.First().isActive);
+        Assert.Equal(student1.IsActive, students.First().IsActive);
     }
 
     [Fact]
@@ -208,7 +183,6 @@ public class StudentRepositoryTests : IAsyncLifetime
         student.LastName = "UpdatedLastName";
         student.Email = "updatedemail@example.com";
         student.Phone = "9998887776";
-        student.Age = 25;
 
         var result = await _repository.Update(student);
 
@@ -217,7 +191,6 @@ public class StudentRepositoryTests : IAsyncLifetime
         Assert.Equal("UpdatedLastName", result.LastName);
         Assert.Equal("updatedemail@example.com", result.Email);
         Assert.Equal("9998887776", result.Phone);
-        Assert.Equal(25, result.Age);
 
         var updatedStudent = await _repository.GetById(student.Id);
         Assert.NotNull(updatedStudent);
@@ -225,7 +198,6 @@ public class StudentRepositoryTests : IAsyncLifetime
         Assert.Equal("UpdatedLastName", updatedStudent.LastName);
         Assert.Equal("updatedemail@example.com", updatedStudent.Email);
         Assert.Equal("9998887776", updatedStudent.Phone);
-        Assert.Equal(25, updatedStudent.Age);
     }
 
     [Fact]

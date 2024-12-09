@@ -22,7 +22,7 @@ builder.Services.AddCommonServices(builder.Configuration,typeof(AutoMapperProfil
 builder.Services.AddDbContextReadWriteConfiguration<UserAPIDbContext>(builder.Configuration);
 builder.Services.ConfigureHealthChecks(builder.Configuration);
 builder.Services.AddHealthChecks().AddCheck<CustomHealthCheck>(nameof(CustomHealthCheck));
-builder.Services.ConfigureGenericRepository<User, UserAPIDbContext>(builder.Configuration);
+// builder.Services.ConfigureGenericRepository<User, UserAPIDbContext>(builder.Configuration);
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();

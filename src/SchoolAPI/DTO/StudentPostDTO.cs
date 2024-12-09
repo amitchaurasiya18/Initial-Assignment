@@ -1,5 +1,8 @@
-﻿namespace SchoolAPI.DTO
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SchoolAPI.DTO
 {
+    [ExcludeFromCodeCoverage]
     public class StudentPostDTO
     {
         public string FirstName { get; set; } = string.Empty;
